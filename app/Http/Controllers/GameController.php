@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\RawgService;
+use Illuminate\Support\Facades\Cache;
 
 class GameController extends Controller
 {
@@ -18,11 +19,22 @@ class GameController extends Controller
     {
         $response = $this->rawg->getPopularGames();
 
-        $games = $response['results'] ?? [];
+        $games = collect($response['results'] ?? [])
+            ->map(function ($game) {
+
+                $details = Cache::remember("rawg_game_{$game['id']}", 3600, function () use ($game) {
+                    return $this->rawg->getGame($game['id']);
+                });
+
+                $game['developers'] = $details['developers'] ?? [];
+
+                return $game;
+            });
 
         return view('games.index', [
-            'games' => $games
+            'games' => $games,
         ]);
+
     }
 
     public function search(Request $request)
@@ -35,13 +47,23 @@ class GameController extends Controller
 
         $response = $this->rawg->searchGames($query);
 
-        $games = $response['results'] ?? [];
+        $games = collect($response['results'] ?? [])
+            ->map(function ($game) {
+
+                $details = Cache::remember("game_{$game['id']}", 3600, function () use ($game) {
+                return $this->rawg->getGame($game['id']);
+                });
+
+                $game['developers'] = $details['developers'] ?? [];
+
+                return $game;
+            });
 
         return view('games.index', [
             'games' => $games,
             'query' => $query
-        ]);
-    }
+    ]);
+}
 
     public function show($id)
     {

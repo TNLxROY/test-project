@@ -47,7 +47,7 @@ class RawgService
         return [
             'id' => $data['id'] ?? null,
             'name' => $data['name'] ?? '',
-            'background_image' => $data['background_image'] ?? null,
+            'image' => $data['image'] ?? null,
             'rating' => $data['rating'] ?? null,
             'released' => $data['released'] ?? null,
 
