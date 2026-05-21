@@ -20,7 +20,15 @@
                 <a href="{{ route('games.show', $game['id']) }}" class="post-card" style="text-decoration:none;color:inherit">
 
                     <div class="game-image-wrapper">
-                        <img src="{{ $game['background_image'] ?? '' }}" style="width:100%;border-radius:10px;margin-bottom:10px">
+                        <img
+                            src="{{ $game['background_image'] ?? '' }}"
+                            style="
+                            width:100%;
+                            border-radius:10px;
+                            margin-bottom:10px;
+                            @if(!empty($game['is_adult'])) filter: blur(10px); @endif
+                            "
+                        >
                     </div>
 
                     <h3>{{ $game['name'] }}</h3>

@@ -28,6 +28,44 @@ class GameController extends Controller
 
                 $game['developers'] = $details['developers'] ?? [];
 
+                $game['is_adult'] = false;
+
+                /* ONLY hard ESRB block */
+                $rating = $details['esrb_rating']['name'] ?? null;
+
+                if ($rating === 'Adults Only') {
+                    $game['is_adult'] = true;
+                }
+
+                /* ONLY explicit NSFW keywords */
+                $nsfwKeywords = [
+                    'hentai',
+                    'porn',
+                    'erotic hentai',
+                    'explicit sexual content'
+                ];
+
+                foreach ($details['tags'] ?? [] as $tag) {
+                    $name = strtolower($tag['name'] ?? '');
+
+                    foreach ($nsfwKeywords as $keyword) {
+                        if (str_contains($name, $keyword)) {
+                            $game['is_adult'] = true;
+                            break 2;
+                        }
+                    }
+                }
+
+                /* STRICT title filter */
+                $title = strtolower($details['name'] ?? '');
+
+                foreach (['hentai', 'porn'] as $word) {
+                    if (str_contains($title, $word)) {
+                        $game['is_adult'] = true;
+                        break;
+                    }
+                }
+
                 return $game;
             });
 
