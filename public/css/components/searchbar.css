@@ -13,7 +13,6 @@
 /* =========================
    PAGE CENTERING
 ========================= */
-
 .search-wrap {
     display: flex;
     align-items: center;
@@ -23,18 +22,17 @@
 /* =========================
    FORM CONTAINER
 ========================= */
-
 .search-form {
     position: relative;
     width: 37rem;
     background: var(--color-brand);
     border-radius: var(--rad);
+    box-shadow: 4px 4px 0px 0px rgba(232, 25, 44, 1);
 }
 
 /* =========================
    BASE INPUT + BUTTON
 ========================= */
-
 .search-form input,
 .search-form button {
     height: var(--height);
@@ -47,7 +45,6 @@
 /* =========================
    INPUT FIELD
 ========================= */
-
 .search-form input {
     width: 100%;
     background: var(--color-light);
@@ -57,7 +54,6 @@
     outline: none;
     position: relative;
     z-index: 1;
-
     transition: width var(--dur) var(--bez),
                 border-radius var(--dur) var(--bez);
 }
@@ -76,19 +72,15 @@
 /* =========================
    SUBMIT BUTTON
 ========================= */
-
 .search-form button[type="submit"] {
     display: none;
-
     position: absolute;
     top: 0;
     right: 0;
     width: var(--btn-width);
-
     font-weight: bold;
     background: var(--color-brand);
     border-radius: 0 var(--rad) var(--rad) 0;
-
     cursor: pointer;
 }
 
@@ -98,62 +90,48 @@
 }
 
 /* =========================
-   CLEAR BUTTON (ANIMATED SLIDE)
+   CLEAR BUTTON
 ========================= */
-
-/* CLEAR BUTTON ALWAYS POSITIONED CORRECTLY */
 .search-form .clear-btn {
+    z-index: 2;
     position: absolute;
     top: 50%;
-    right: 9rem;
-
-    width: 2.4rem;
-    height: 2.4rem;
-
+    right: 9.5rem;
+    width: 2.5rem;
+    height: 2.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
-
     border-radius: 50%;
     border: none;
-
-    background: rgba(0,0,0,0.15);
-    color: #000;
-
+    background: rgba(0,0,0,1);
+    color: #ffffff;
     cursor: pointer;
-
     opacity: 0;
-    transform: translateY(-50%) translateX(10px) scale(0.8);
-
     pointer-events: none;
-
-    transition: all 0.3s cubic-bezier(0,0,0.43,1.49);
+    transform: translateY(-50%) translateX(10px) scale(0.8);
+    transition:
+        opacity var(--dur) var(--bez),
+        transform var(--dur) var(--bez),
+        background var(--dur) var(--bez);
 }
 
-/* SHOW STATE */
+/* SHOW + SLIDE IN */
 .search-form.has-value .clear-btn {
     opacity: 1;
-    transform: translateY(-50%) translateX(0) scale(1);
     pointer-events: auto;
+    transform: translateY(-50%) translateX(0) scale(1);
 }
 
-/* hover effect */
+/* hover */
 .search-form .clear-btn:hover {
-    background: rgba(0, 0, 0, 0.25);
-    transform: translateY(-50%) translateX(0) scale(1);
-}
-
-/* SHOW + SLIDE IN when input has text */
-.search-form input:not(:placeholder-shown) ~ .clear-btn {
-    opacity: 1;
-    transform: translateY(-50%) translateX(0) scale(1);
-    pointer-events: auto;
+    background: rgba(0,0,0,0.25);
+    transform: translateY(-50%) translateX(0) scale(1.08);
 }
 
 /* =========================
    ACCESSIBILITY LABEL
 ========================= */
-
 .search-form label {
     position: absolute;
     clip: rect(1px, 1px, 1px, 1px);

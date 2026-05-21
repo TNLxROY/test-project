@@ -4,7 +4,7 @@
 <div id="page-about" class="page">
   <div class="about-hero">
     <h1>We believe in<br><em style="color:var(--accent);font-style:normal">honest writing</em></h1>
-    <p>Fact.Speakers is a simple website where people can share their honest opinions about games created using Laravel and Node.js</p>
+    <p>Fact.Speakers is a simple website where people can share their honest opinions about games. This project was created using Laravel and Node.js</p>
   </div>
 
   <div class="section" style="padding-top:1rem">
