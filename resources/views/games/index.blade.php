@@ -1,15 +1,11 @@
 @extends('layouts.app')
-
 @section('content')
-
 <div id="page-home" class="page active">
     <div class="hero">
         <h1>Search for a <em>Game.</em></h1>
     </div>
 </div>
     <x-search-bar :query="$query ?? ''" />
-
-
     @isset($games)
         <div class="posts-grid">
 
@@ -27,12 +23,17 @@
                             "
                         >
                     </div>
-
-                    <h3>{{ $game['name'] }}</h3>
-
-                    <p>Released: {{ $game['released'] ?? 'Unknown' }}</p>
-                    <p>Rating: {{ $game['rating'] ?? 'N/A' }}</p>
-
+                    <div>
+                        <h3>{{ $game['name'] }}</h3>
+                    </div>
+                    <p>
+                        Released:
+                        {{ $game['released'] ?? 'Unknown' }}
+                    </p>
+                    <p>
+                        Rating:
+                        {{ $game['rating'] ?? 'N/A' }}
+                    </p>
                     <p>
                         Developers:
                         {{ implode(', ', $game['developers'] ?? []) ?: 'N/A' }}
@@ -41,6 +42,5 @@
             @endforeach
         </div>
     @endisset
-
 </div>
 @endsection
