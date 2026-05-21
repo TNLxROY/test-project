@@ -2,14 +2,21 @@
 
 @section('content')
 
-<div class="section">
-
-    <h1 class="section-title">Search Games</h1>
-
-    <form action="{{ route('games.search') }}" method="GET">
-        <input type="text" name="q" value="{{ $query ?? '' }}">
-        <button type="submit">Search</button>
-    </form>
+<div id="page-home" class="page active">
+    <div class="hero">
+        <h1>Search for a <em>Game.</em></h1>
+    </div>
+</div>
+    <x-search-bar :query="$query ?? ''" />
+        <!--
+        <div class="rootsb bodysb htmlsb">
+            <form action="{{ route('games.search') }}" method="GET">
+                <label for="search">Search for a game</label>
+                <input id="search" type="text" name="q" value="{{ $query ?? '' }}">
+                <button type="submit">Search</button>
+            </form>
+        </div>
+        -->
 
     <hr class="divider">
 
