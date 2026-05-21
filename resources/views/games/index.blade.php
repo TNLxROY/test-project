@@ -8,17 +8,7 @@
     </div>
 </div>
     <x-search-bar :query="$query ?? ''" />
-        <!--
-        <div class="rootsb bodysb htmlsb">
-            <form action="{{ route('games.search') }}" method="GET">
-                <label for="search">Search for a game</label>
-                <input id="search" type="text" name="q" value="{{ $query ?? '' }}">
-                <button type="submit">Search</button>
-            </form>
-        </div>
-        -->
 
-    <hr class="divider">
 
     @isset($games)
         <div class="posts-grid">
