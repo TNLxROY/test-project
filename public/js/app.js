@@ -114,19 +114,9 @@ function renderUser(user) {
 
     // toggle dropdown on kebab click
     document.getElementById('kebab-btn').addEventListener('click', (e) => {
-        e.stopPropagation();
-        const chip = document.getElementById('user-chip');
-        const dd   = document.getElementById('user-dropdown');
-        if (!dd || !chip) return;
-
-        const open = dd.classList.toggle('open');
-
-        if (open) {
-            // position under the chip
-            const rect = chip.getBoundingClientRect();
-            dd.style.top   = (rect.bottom + window.scrollY + 8) + 'px';
-            dd.style.right = (window.innerWidth - rect.right) + 'px';
-        }
+    e.stopPropagation();
+    const dd = document.getElementById('user-dropdown');
+    if (dd) dd.classList.toggle('open');
     });
 }
 
