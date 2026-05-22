@@ -82,25 +82,68 @@
         <div class="show-card">
             <h2 class="show-card-title">Platforms</h2>
             <div class="platform-grid">
+                @php
+                    $platformIcons = [
+                        'pc'               => ['icon' => 'ti-device-desktop',  'color' => '#90caf9'],
+                        'playstation4'     => ['icon' => 'ti-playstation-x', 'color' => '#7b9cff'],
+                        'playstation5'     => ['icon' => 'ti-playstation-x', 'color' => '#7b9cff'],
+                        'playstation3'     => ['icon' => 'ti-playstation-x', 'color' => '#7b9cff'],
+                        'playstation2'     => ['icon' => 'ti-playstation-x', 'color' => '#7b9cff'],
+                        'playstation1'     => ['icon' => 'ti-playstation-x', 'color' => '#7b9cff'],
+                        'ps-vita'          => ['icon' => 'ti-playstation-x', 'color' => '#7b9cff'],
+                        'psp'              => ['icon' => 'ti-playstation-x', 'color' => '#7b9cff'],
+                        'xbox-one'         => ['icon' => 'ti-brand-xbox',       'color' => '#81c784'],
+                        'xbox360'          => ['icon' => 'ti-brand-xbox',       'color' => '#81c784'],
+                        'xbox-series-x'    => ['icon' => 'ti-brand-xbox',       'color' => '#81c784'],
+                        'nintendo-switch'  => ['icon' => 'ti-device-gamepad-2', 'color' => '#ef5350'],
+                        'wii'              => ['icon' => 'ti-device-gamepad-2', 'color' => '#ef5350'],
+                        'wii-u'            => ['icon' => 'ti-device-gamepad-2', 'color' => '#ef5350'],
+                        'nintendo-3ds'     => ['icon' => 'ti-device-gamepad-2', 'color' => '#ef5350'],
+                        'nintendo-ds'      => ['icon' => 'ti-device-gamepad-2', 'color' => '#ef5350'],
+                        'ios'              => ['icon' => 'ti-brand-apple',      'color' => '#bdbdbd'],
+                        'macos'            => ['icon' => 'ti-brand-apple',      'color' => '#bdbdbd'],
+                        'android'          => ['icon' => 'ti-brand-android',    'color' => '#a5d6a7'],
+                        'linux'            => ['icon' => 'ti-brand-ubuntu',     'color' => '#ff8a65'],
+                        'web'              => ['icon' => 'ti-world',            'color' => '#4fc3f7'],
+                        'atari'            => ['icon' => 'ti-device-gamepad',   'color' => '#888899'],
+                        'sega-saturn'      => ['icon' => 'ti-device-gamepad',   'color' => '#888899'],
+                        'dreamcast'        => ['icon' => 'ti-device-gamepad',   'color' => '#888899'],
+                        'game-boy'         => ['icon' => 'ti-device-gamepad',   'color' => '#888899'],
+                        'game-boy-advance' => ['icon' => 'ti-device-gamepad',   'color' => '#888899'],
+                        'gamecube'         => ['icon' => 'ti-device-gamepad',   'color' => '#888899'],
+                    ];
+
+                    $defaultPlatform = ['icon' => 'ti-device-gamepad', 'color' => '#888899'];
+                @endphp
+
                 @foreach($game['platforms'] as $p)
-                <div class="platform-item">
-                    <span class="platform-name">{{ $p['platform']['name'] }}</span>
-                    @if(!empty($p['released_at']))
-                        <span class="platform-date">{{ $p['released_at'] }}</span>
-                    @endif
-                    @if(!empty($p['requirements']['minimum']) || !empty($p['requirements']['recommended']))
-                        <div class="sysreq">
-                            @if(!empty($p['requirements']['minimum']))
-                                <p class="sysreq-label">Minimum</p>
-                                <p class="sysreq-text">{{ $p['requirements']['minimum'] }}</p>
-                            @endif
-                            @if(!empty($p['requirements']['recommended']))
-                                <p class="sysreq-label">Recommended</p>
-                                <p class="sysreq-text">{{ $p['requirements']['recommended'] }}</p>
-                            @endif
-                        </div>
-                    @endif
-                </div>
+                    @php
+                        $slug    = $p['platform']['slug'] ?? '';
+                        $pi      = $platformIcons[$slug] ?? $defaultPlatform;
+                    @endphp
+                    <div class="platform-item">
+                        <div class="platform-item-header">
+                            <i class="ti {{ $pi['icon'] }} platform-icon"
+                            style="color: {{ $pi['color'] }}"
+                            aria-hidden="true"></i>
+                        <span class="platform-name">{{ $p['platform']['name'] }}</span>
+                    </div>
+                        @if(!empty($p['released_at']))
+                            <span class="platform-date">{{ $p['released_at'] }}</span>
+                        @endif
+                            @if(!empty($p['requirements']['minimum']) || !empty($p['requirements']['recommended']))
+                            <div class="sysreq">
+                                @if(!empty($p['requirements']['minimum']))
+                                    <p class="sysreq-label">Minimum</p>
+                                    <p class="sysreq-text">{{ $p['requirements']['minimum'] }}</p>
+                                @endif
+                                @if(!empty($p['requirements']['recommended']))
+                                    <p class="sysreq-label">Recommended</p>
+                                    <p class="sysreq-text">{{ $p['requirements']['recommended'] }}</p>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
                 @endforeach
             </div>
         </div>

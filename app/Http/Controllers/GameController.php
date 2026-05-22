@@ -112,13 +112,24 @@ class GameController extends Controller
             'key' => $apiKey,
         ]);
 
-        // Handle failed requests
         if ($response->failed()) {
             abort(404, 'Game not found.');
         }
 
-        // RAWG returns everything your Blade needs
         $game = $response->json();
+
+        $stores = $this->rawg->getGameStores($id);
+
+        $storeUrls = collect($stores['results'] ?? [])
+            ->keyBy('store_id')
+            ->map(fn($s) => $s['url']);
+
+        if (!empty($game['stores'])) {
+            $game['stores'] = array_map(function ($s) use ($storeUrls) {
+                $s['url'] = $storeUrls[$s['store']['id']] ?? null;
+                return $s;
+            }, $game['stores']);
+        }
 
         return view('games.show', compact('game'));
     }

@@ -64,4 +64,9 @@ class RawgService
                 ->all(),
             ];
     }
+
+    public function getGameStores(int|string $id): array
+    {
+        return $this->request("games/{$id}/stores") ?? [];
+    }
 }

@@ -37,6 +37,17 @@ Route::get('/api/user', function () {
     ]);
 })->middleware('web');
 
+Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'show'])
+    ->middleware('auth')
+    ->name('profile');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile',                  [App\Http\Controllers\ProfileController::class, 'show'])->name('profile');
+    Route::post('/profile/name',            [App\Http\Controllers\ProfileController::class, 'updateName']);
+    Route::post('/profile/password',        [App\Http\Controllers\ProfileController::class, 'updatePassword']);
+    Route::delete('/profile/delete',        [App\Http\Controllers\ProfileController::class, 'deleteAccount']);
+});
+
 Route::get('/games', [GameController::class, 'index'])->name('games.index');
 Route::get('/games/search', [GameController::class, 'search'])->name('games.search');
 Route::get('/games/{id}', [GameController::class, 'show'])->name('games.show');

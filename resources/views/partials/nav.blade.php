@@ -8,8 +8,21 @@
         <a style="color:var(--muted)">Users</a>
         <a style="color:var(--muted)">Membership</a>
     </div>
-    {{-- JS owns this container entirely — do NOT use @auth here --}}
-    <div id="mini-profile-container">
-        {{-- Rendered by refreshAuthUI() in app.js --}}
+    <div id="mini-profile-container"></div>
+    <div class="user-dropdown" id="user-dropdown">
+        <div class="dropdown-header">
+            <div class="d-name" id="dropdown-name"></div>
+            <div class="d-email" id="dropdown-email"></div>
+        </div>
+        <a href="{{ route('profile') }}" class="dropdown-item">
+            <i class="ti ti-user" aria-hidden="true"></i> Profile
+        </a>
+        <a href="{{ route('games.index') }}" class="dropdown-item">
+            <i class="ti ti-device-gamepad-2" aria-hidden="true"></i> Browse Games
+        </a>
+        <hr class="dropdown-divider">
+        <button class="dropdown-item danger" data-action="logout">
+            <i class="ti ti-logout" aria-hidden="true"></i> Log out
+        </button>
     </div>
 </nav>

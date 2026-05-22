@@ -84,25 +84,57 @@ function renderUser(user) {
                 <button class="btn btn-primary btn-sm" data-action="open-register">Sign up</button>
             </div>
         `;
+        // hide dropdown if visible
+        const dd = document.getElementById('user-dropdown');
+        if (dd) dd.classList.remove('open');
         return;
     }
 
     const name = user.name || '';
-    const initials = name
-        .split(' ')
-        .map(n => n[0])
-        .join('')
-        .toUpperCase()
-        .substring(0, 2);
+    const email = user.email || '';
+    const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+
+    // populate dropdown header
+    const dName = document.getElementById('dropdown-name');
+    const dEmail = document.getElementById('dropdown-email');
+    if (dName)  dName.innerText  = name;
+    if (dEmail) dEmail.innerText = email;
 
     container.innerHTML = `
-        <div class="user-chip">
+        <div class="user-chip" id="user-chip">
             <div class="avatar">${initials}</div>
             <span class="username">${name}</span>
-            <button class="btn btn-ghost btn-sm" data-action="logout">Logout</button>
+            <button class="kebab-btn" id="kebab-btn" aria-label="User menu">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+            </button>
         </div>
     `;
+
+    // toggle dropdown on kebab click
+    document.getElementById('kebab-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const chip = document.getElementById('user-chip');
+        const dd   = document.getElementById('user-dropdown');
+        if (!dd || !chip) return;
+
+        const open = dd.classList.toggle('open');
+
+        if (open) {
+            // position under the chip
+            const rect = chip.getBoundingClientRect();
+            dd.style.top   = (rect.bottom + window.scrollY + 8) + 'px';
+            dd.style.right = (window.innerWidth - rect.right) + 'px';
+        }
+    });
 }
+
+// close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+    const dd = document.getElementById('user-dropdown');
+    if (dd && !dd.contains(e.target)) dd.classList.remove('open');
+});
 
 // Only used on initial page load to check if user is already logged in.
 // After login/logout we use renderUser() directly instead of asking the server again.
