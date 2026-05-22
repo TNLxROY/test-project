@@ -6,7 +6,6 @@
     </div>
 </div>
     <x-search-bar :query="$query ?? ''" />
-
     @isset($games)
         <div class="results-section">
             <div class="results-header">
@@ -15,7 +14,6 @@
                     @if(!empty($query)) for <span>"{{ $query }}"</span>@endif
                 </p>
             </div>
-
             <div class="games-grid">
                 @foreach($games as $game)
                     <a href="{{ route('games.show', $game['id']) }}" class="game-card">
@@ -37,7 +35,6 @@
                                 </div>
                             @endif
                         </div>
-
                         <div class="card-body">
                             <div class="genre-pills">
                                 @if(!empty($game['genres']))
@@ -48,11 +45,8 @@
                                     <span class="genre-pill genre-pill--undefined">Genre undefined.</span>
                                 @endif
                             </div>
-
                             <h3 class="card-title">{{ $game['name'] }}</h3>
-
                             <hr class="divider-line">
-
                             <div class="card-meta">
                                 <div class="meta-item">
                                     <span class="meta-label">Released</span>
@@ -70,7 +64,6 @@
                                 </div>
                             </div>
                         </div>
-
                     </a>
                 @endforeach
             </div>

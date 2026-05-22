@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\RawgService;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http ;
 
 class GameController extends Controller
 {
@@ -105,7 +106,19 @@ class GameController extends Controller
 
     public function show($id)
     {
-        $game = $this->rawg->getGame($id);
+        $apiKey = env('RAWG_API_KEY');
+
+        $response = Http::get("https://api.rawg.io/api/games/{$id}", [
+            'key' => $apiKey,
+        ]);
+
+        // Handle failed requests
+        if ($response->failed()) {
+            abort(404, 'Game not found.');
+        }
+
+        // RAWG returns everything your Blade needs
+        $game = $response->json();
 
         return view('games.show', compact('game'));
     }
