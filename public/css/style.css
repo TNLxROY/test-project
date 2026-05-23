@@ -521,23 +521,6 @@ footer{
     transform:translateX(0)
 }
 
-.user-chip{
-    display:flex;
-    align-items:center;
-    gap:.5rem;
-    background:var(--bg3);
-    border:1px solid var(--border);
-    border-radius:100px;
-    padding:.3rem .75rem .3rem .3rem;
-    cursor:pointer;
-    font-size:.85rem
-}
-.user-chip .avatar{
-    width:28px;
-    height:28px;
-    font-size:.7rem
-}
-
 .game-image-wrapper {
     width: 100%;
     aspect-ratio: 16 / 9; /* or 2/3 for vertical covers */
@@ -1069,11 +1052,11 @@ footer{
 /* ── Kebab / user dropdown ──────────────────────────── */
 
 .kebab-btn {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
+    width: 36px;
+    border-radius: 0;
     background: var(--bg4);
-    border: 1px solid var(--border);
+    border: none;
+    border-left: 1px solid var(--border);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1082,10 +1065,12 @@ footer{
     cursor: pointer;
     transition: all .2s;
     flex-shrink: 0;
+    padding: 0;
+    align-self: stretch;
 }
 .kebab-btn:hover {
-    border-color: var(--accent);
     background: rgba(232,25,44,.1);
+    border-left-color: var(--accent);
 }
 .dot {
     width: 3px;
@@ -1448,8 +1433,8 @@ footer{
     }
     .profile-avatar-lg,
     .profile-avatar-img {
-        width: 100px;
-        height: 100px;
+        width: 175px;
+        height: 175px;
     }
 }
 
@@ -1484,9 +1469,346 @@ footer{
     pointer-events: none;
 }
 
+.user-chip {
+    display: flex;
+    align-items: stretch;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: .85rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color .2s;
+}
+.user-chip:hover {
+    border-color: var(--accent);
+}
+
+.user-chip-link {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    text-decoration: none;
+    color: var(--text);
+    padding: .3rem .6rem .3rem .3rem;
+    flex: 1;
+    font-weight: 500;
+    -webkit-font-smoothing: antialiased;
+}
+.user-chip-link:hover { color: var(--accent2); }
+
+.user-chip .avatar {
+    width: 28px;
+    height: 28px;
+    font-size: .7rem;
+    flex-shrink: 0;
+}
+
 .avatar-img-chip {
     width: 28px;
     height: 28px;
     border-radius: 50%;
     object-fit: cover;
+    flex-shrink: 0;
+}
+
+.kebab-btn {
+    width: 36px;
+    background: var(--bg4);
+    border: none;
+    border-left: 1px solid var(--border);
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    cursor: pointer;
+    transition: all .2s;
+    flex-shrink: 0;
+    padding: 0;
+    align-self: stretch;
+}
+.kebab-btn:hover {
+    background: rgba(232,25,44,.1);
+    border-left-color: var(--accent);
+}
+.dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--muted);
+    display: block;
+    transition: background .2s;
+}
+.kebab-btn:hover .dot { background: var(--accent2); }
+
+/* old username-only link rule — no longer needed */
+.user-chip a.username { color: var(--text); text-decoration: none; }
+.user-chip a.username:hover { color: var(--accent2); }
+
+/* ── Users index ────────────────────────────────────── */
+.users-hero {
+    background: linear-gradient(to bottom, var(--bg3), var(--bg));
+    border-bottom: 1px solid var(--border);
+    padding: 4rem 2rem 3rem;
+}
+.users-hero-inner {
+    max-width: 680px;
+    margin: 0 auto;
+    text-align: center;
+}
+.users-hero-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: .5rem;
+}
+.users-hero-sub {
+    color: var(--muted);
+    font-size: .95rem;
+    margin-bottom: 2rem;
+}
+.users-search-form {
+    display: flex;
+    gap: .75rem;
+    max-width: 480px;
+    margin: 0 auto;
+}
+.users-search-input {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: .65rem 1rem;
+    color: var(--text);
+    font-size: .9rem;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: border .2s;
+}
+.users-search-input:focus { border-color: var(--accent); }
+.users-search-input::placeholder { color: var(--muted); }
+
+.users-layout {
+    max-width: 680px;
+    margin: 2rem auto;
+    padding: 0 2rem 4rem;
+}
+
+/* ── Player list rows (Genshin invite style) ────────── */
+.player-list {
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+}
+.player-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: .5rem 1.25rem .5rem .5rem;
+    text-decoration: none;
+    color: inherit;
+    transition: all .2s;
+    position: relative;
+    overflow: hidden;
+}
+.player-row::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 35%;
+    height: 100%;
+    background: linear-gradient(to left, rgba(232,25,44,0.07), transparent);
+    pointer-events: none;
+    transition: opacity .2s;
+}
+.player-row:hover {
+    border-color: var(--accent);
+    transform: translateX(4px);
+}
+.player-row:hover::after {
+    background: linear-gradient(to left, rgba(232,25,44,0.15), transparent);
+}
+.player-row-left {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+}
+.player-avatar-wrap { flex-shrink: 0; }
+.player-avatar-img {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border);
+    display: block;
+}
+.player-avatar-initials {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), #b91c1c);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+    color: #fff;
+    border: 2px solid var(--border);
+}
+.player-name {
+    display: block;
+    font-size: .92rem;
+    font-weight: 600;
+    color: var(--text);
+}
+.player-meta {
+    display: block;
+    font-size: .75rem;
+    color: var(--muted);
+    margin-top: 1px;
+}
+.player-row-right { z-index: 1; }
+.player-chevron {
+    color: var(--muted);
+    font-size: 1rem;
+    transition: color .2s, transform .2s;
+}
+.player-row:hover .player-chevron {
+    color: var(--accent2);
+    transform: translateX(3px);
+}
+
+.users-pagination {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+/* ── Player profile hero ────────────────────────────── */
+.player-hero {
+    position: relative;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+    padding: 3.5rem 2rem 2.5rem;
+}
+.player-hero-fade {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at right center, rgba(232,25,44,0.18) 0%, transparent 65%),
+        linear-gradient(to bottom, var(--bg3) 0%, var(--bg2) 100%);
+    pointer-events: none;
+}
+.player-hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+.player-hero-profile {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-top: 1.25rem;
+}
+.player-hero-avatar-wrap { flex-shrink: 0; }
+.player-hero-avatar-img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--border);
+    display: block;
+}
+.player-hero-avatar-initials {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), #b91c1c);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #fff;
+    border: 3px solid var(--border);
+}
+.player-hero-name {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: .25rem;
+}
+.player-hero-since {
+    font-size: .85rem;
+    color: var(--muted);
+    margin-bottom: .85rem;
+}
+.player-hero-stats {
+    display: flex;
+    gap: 1.5rem;
+}
+.player-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.player-stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--accent2);
+    line-height: 1;
+}
+.player-stat-label {
+    font-size: .72rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.player-reviews-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    margin-bottom: .25rem;
+}
+
+.review-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+.review-game-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(232,25,44,0.12);
+    border: 1px solid rgba(232,25,44,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent2);
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+    .player-hero-profile { flex-direction: column; text-align: center; }
+    .player-hero-stats { justify-content: center; }
+    .player-row { border-radius: 16px; }
 }

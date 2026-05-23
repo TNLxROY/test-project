@@ -101,19 +101,21 @@ function renderUser(user) {
     if (dEmail) dEmail.innerText = email;
 
     container.innerHTML = `
-    <div class="user-chip" id="user-chip">
-        ${user.avatar_url
-            ? `<img src="${user.avatar_url}" class="avatar avatar-img-chip" alt="${name}">`
-            : `<div class="avatar">${initials}</div>`
-        }
-        <span class="username">${name}</span>
-        <button class="kebab-btn" id="kebab-btn" aria-label="User menu">
-            <span class="dot"></span>
-            <span class="dot"></span>
-            <span class="dot"></span>
-        </button>
-    </div>
-`;
+        <div class="user-chip" id="user-chip">
+            <a href="/profile" class="user-chip-link">
+                ${user.avatar_url
+                    ? `<img src="${user.avatar_url}" class="avatar avatar-img-chip" alt="${name}">`
+                    : `<div class="avatar">${initials}</div>`
+                }
+                <span class="username">${name}</span>
+            </a>
+            <button class="kebab-btn" id="kebab-btn" aria-label="User menu">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+            </button>
+        </div>
+    `;
 
     // toggle dropdown on kebab click
     document.getElementById('kebab-btn').addEventListener('click', (e) => {

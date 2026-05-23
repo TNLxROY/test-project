@@ -5,7 +5,7 @@
         <a href="/about">About</a>
         <a href="/games">Games</a>
         <a style="color:var(--muted)">News</a>
-        <a style="color:var(--muted)">Users</a>
+        <a href="{{ route('users.index') }}">Users</a>
         <a style="color:var(--muted)">Membership</a>
     </div>
     <div id="mini-profile-container"></div>

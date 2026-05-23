@@ -58,3 +58,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/games/{gameId}/reviews',           [App\Http\Controllers\ReviewController::class, 'store']);
     Route::delete('/games/{gameId}/reviews/{reviewId}', [App\Http\Controllers\ReviewController::class, 'destroy']);
 });
+
+Route::get('/users',        [App\Http\Controllers\UserController::class, 'index'])->name('users.index');
+Route::get('/users/{user}', [App\Http\Controllers\UserController::class, 'show'])->name('users.show');
