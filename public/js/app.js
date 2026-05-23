@@ -160,8 +160,14 @@ document.addEventListener('click', async (e) => {
             const res = await authFetch('/logout', { method: 'POST' });
             if (res.ok) {
                 showNotif('Logged out!');
-                renderUser(null); // we know the user is gone — no need to ask the server
-                location.reload();
+                renderUser(null);
+                const protectedPaths = ['/friends', '/profile'];
+                const isProtected = protectedPaths.some(p => window.location.pathname.startsWith(p));
+                if (isProtected) {
+                    window.location.href = '/';
+                } else {
+                    location.reload();
+                }
             }
         } catch (err) {
             console.error('Logout error', err);
@@ -246,8 +252,6 @@ window.doRegister = async () => {
 // -------------------------
 document.addEventListener('DOMContentLoaded', refreshAuthUI);
 
-const reviewCsrf = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
-
 window.switchShowTab = function(tab) {
     ['info','reviews','write'].forEach(t => {
         document.getElementById('panel-' + t).style.display = t === tab ? 'block' : 'none';
@@ -280,7 +284,7 @@ window.submitReview = async function(gameId, gameName) {
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'X-CSRF-TOKEN': reviewCsrf,
+            'X-CSRF-TOKEN': csrf,
         },
         body: JSON.stringify({ body, game_name: gameName }),
     });
@@ -331,7 +335,7 @@ window.deleteReview = async function(reviewId, gameId) {
         credentials: 'same-origin',
         headers: {
             'Accept': 'application/json',
-            'X-CSRF-TOKEN': reviewCsrf,
+            'X-CSRF-TOKEN': csrf,
         },
     });
 
