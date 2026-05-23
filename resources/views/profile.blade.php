@@ -14,7 +14,7 @@
                     {{ strtoupper(substr($user->name, 0, 1)) }}{{ strtoupper(substr(strstr($user->name.' ', ' '), 1, 1)) }}
                 </div>
             @endif
-            <button class="avatar-edit-btn" id="avatar-edit-btn" title="Change photo">
+            <button class="avatar-edit-btn" id="avatar-edit-btn" title="Change profile picture">
                 <i class="ti ti-camera" aria-hidden="true"></i>
             </button>
         </div>
