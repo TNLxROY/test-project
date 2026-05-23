@@ -65,8 +65,8 @@ class ProfileController extends Controller
     {
         $request->validate([
             'avatar'    => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
-            'crop_x'    => ['required', 'numeric'],
-            'crop_y'    => ['required', 'numeric'],
+            'crop_x'    => ['required', 'numeric', 'min:0'],
+            'crop_y'    => ['required', 'numeric', 'min:0'],
             'crop_size' => ['required', 'numeric', 'min:1'],
         ]);
 
@@ -76,21 +76,19 @@ class ProfileController extends Controller
             Storage::disk('public')->delete($user->avatar);
         }
 
-        $manager = new ImageManager(new Driver());
-        $image   = $manager->read($request->file('avatar')->getRealPath());
+        $manager  = new ImageManager(new Driver());
+        $image    = $manager->read($request->file('avatar')->getRealPath());
 
-        $origW   = $image->width();
-        $origH   = $image->height();
-        $scaleX  = $origW / 300;
-        $scaleY  = $origH / 300;
-        $scale   = max($scaleX, $scaleY);
+        $origW    = $image->width();
+        $origH    = $image->height();
 
-        $cropSize = (int) round($request->crop_size * $scale);
-        $cropX    = (int) round($request->crop_x   * $scaleX);
-        $cropY    = (int) round($request->crop_y   * $scaleY);
+        $cropX    = (int) $request->crop_x;
+        $cropY    = (int) $request->crop_y;
+        $cropSize = (int) $request->crop_size;
 
-        $cropX    = max(0, min($cropX, $origW - $cropSize));
-        $cropY    = max(0, min($cropY, $origH - $cropSize));
+        // clamp to image bounds
+        $cropX    = max(0, min($cropX, $origW - 1));
+        $cropY    = max(0, min($cropY, $origH - 1));
         $cropSize = min($cropSize, $origW - $cropX, $origH - $cropY);
 
         $image->crop($cropSize, $cropSize, $cropX, $cropY);

@@ -234,7 +234,16 @@ async function confirmDelete() {
 }
 
 // ── Avatar crop ──────────────────────────────────────
-let cropState = { x: 0, y: 0, size: 300, dragging: false, startX: 0, startY: 0, file: null };
+let cropState = {
+    x: 0, y: 0,        // offset of image top-left from crop zone top-left
+    scale: 1,          // zoom multiplier
+    dragging: false,
+    startX: 0, startY: 0,
+    naturalW: 0, naturalH: 0,  // actual image pixel dimensions
+    file: null
+};
+
+const ZONE = 300; // crop zone size in px
 
 document.getElementById('avatar-edit-btn').addEventListener('click', () => {
     document.getElementById('avatar-modal').style.display = 'flex';
@@ -255,9 +264,19 @@ document.getElementById('avatar-file-input').addEventListener('change', function
         const img = document.getElementById('crop-img');
         img.src = e.target.result;
         img.onload = () => {
-            cropState.x    = 0;
-            cropState.y    = 0;
-            cropState.size = 300;
+            cropState.naturalW = img.naturalWidth;
+            cropState.naturalH = img.naturalHeight;
+
+            // fit the shortest side to the zone so image fills the circle
+            const fitScale = ZONE / Math.min(cropState.naturalW, cropState.naturalH);
+            cropState.scale = fitScale;
+
+            // centre the image in the zone
+            const renderedW = cropState.naturalW * fitScale;
+            const renderedH = cropState.naturalH * fitScale;
+            cropState.x = (ZONE - renderedW) / 2;
+            cropState.y = (ZONE - renderedH) / 2;
+
             applyCrop();
         };
         document.getElementById('avatar-modal').style.display = 'flex';
@@ -265,6 +284,7 @@ document.getElementById('avatar-file-input').addEventListener('change', function
     reader.readAsDataURL(file);
 });
 
+// drag
 const cropZone = document.getElementById('crop-zone');
 cropZone.addEventListener('mousedown',  startDrag);
 cropZone.addEventListener('touchstart', startDrag, { passive: true });
@@ -289,17 +309,30 @@ function onDrag(e) {
     applyCrop();
 }
 
+// scroll to zoom
 cropZone.addEventListener('wheel', (e) => {
     e.preventDefault();
-    cropState.size = Math.max(100, Math.min(600, cropState.size - e.deltaY * 0.5));
+    const delta      = e.deltaY > 0 ? 0.9 : 1.1;
+    const minScale   = ZONE / Math.max(cropState.naturalW, cropState.naturalH);
+    const newScale   = Math.max(minScale, Math.min(10, cropState.scale * delta));
+
+    // zoom toward centre of zone
+    const cx         = ZONE / 2;
+    const cy         = ZONE / 2;
+    cropState.x      = cx - (cx - cropState.x) * (newScale / cropState.scale);
+    cropState.y      = cy - (cy - cropState.y) * (newScale / cropState.scale);
+    cropState.scale  = newScale;
+
     applyCrop();
 }, { passive: false });
 
 function applyCrop() {
-    const img = document.getElementById('crop-img');
+    const img    = document.getElementById('crop-img');
+    const renderW = cropState.naturalW * cropState.scale;
+    const renderH = cropState.naturalH * cropState.scale;
+    img.style.width     = renderW + 'px';
+    img.style.height    = renderH + 'px';
     img.style.transform = `translate(${cropState.x}px, ${cropState.y}px)`;
-    img.style.width     = cropState.size + 'px';
-    img.style.height    = cropState.size + 'px';
 }
 
 async function saveAvatar() {
@@ -312,11 +345,16 @@ async function saveAvatar() {
         return;
     }
 
+    // convert screen coords back to actual image pixel coords
+    const cropXNatural    = Math.round(-cropState.x / cropState.scale);
+    const cropYNatural    = Math.round(-cropState.y / cropState.scale);
+    const cropSizeNatural = Math.round(ZONE / cropState.scale);
+
     const formData = new FormData();
     formData.append('avatar',    cropState.file);
-    formData.append('crop_x',    Math.round(-cropState.x));
-    formData.append('crop_y',    Math.round(-cropState.y));
-    formData.append('crop_size', Math.round(cropState.size));
+    formData.append('crop_x',    Math.max(0, cropXNatural));
+    formData.append('crop_y',    Math.max(0, cropYNatural));
+    formData.append('crop_size', cropSizeNatural);
     formData.append('_token',    csrf);
 
     const res  = await fetch('/profile/avatar', {
@@ -335,7 +373,6 @@ async function saveAvatar() {
         let   imgEl    = document.getElementById('avatar-img');
 
         if (initials) initials.remove();
-
         if (!imgEl) {
             imgEl           = document.createElement('img');
             imgEl.id        = 'avatar-img';
@@ -346,20 +383,22 @@ async function saveAvatar() {
         imgEl.src = data.avatar_url;
 
         if (!document.getElementById('remove-avatar-btn')) {
-            const removeBtn       = document.createElement('button');
-            removeBtn.id          = 'remove-avatar-btn';
-            removeBtn.className   = 'btn btn-ghost btn-sm';
+            const removeBtn         = document.createElement('button');
+            removeBtn.id            = 'remove-avatar-btn';
+            removeBtn.className     = 'btn btn-ghost btn-sm';
             removeBtn.style.cssText = 'margin-top:.5rem;font-size:.75rem';
-            removeBtn.textContent = 'Remove photo';
-            removeBtn.onclick     = removeAvatar;
+            removeBtn.textContent   = 'Remove photo';
+            removeBtn.onclick       = removeAvatar;
             document.querySelector('.profile-hero-inner > div:last-child').appendChild(removeBtn);
         }
 
         showProfileNotif('Profile photo updated!');
     } else {
-        msg.innerText     = data.message || data.errors
-            ? (data.message || JSON.stringify(data.errors))
-            : 'Upload failed.';
+        msg.innerText     = data.message
+            ? data.message
+            : data.errors
+                ? JSON.stringify(data.errors)
+                : 'Upload failed.';
         msg.style.display = 'block';
     }
 }
@@ -368,10 +407,7 @@ async function removeAvatar() {
     const res = await fetch('/profile/avatar', {
         method: 'DELETE',
         credentials: 'same-origin',
-        headers: {
-            'X-CSRF-TOKEN': csrf,
-            'Accept':       'application/json',
-        },
+        headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
     });
 
     if (res.ok) {
@@ -381,10 +417,10 @@ async function removeAvatar() {
 
         if (imgEl) imgEl.remove();
 
-        const initials         = document.createElement('div');
-        initials.id            = 'avatar-initials';
-        initials.className     = 'profile-avatar-lg';
-        initials.textContent   = name[0].toUpperCase();
+        const initials       = document.createElement('div');
+        initials.id          = 'avatar-initials';
+        initials.className   = 'profile-avatar-lg';
+        initials.textContent = name[0].toUpperCase();
         wrap.prepend(initials);
 
         document.getElementById('remove-avatar-btn')?.remove();
