@@ -24,7 +24,7 @@
             <p class="profile-email">{{ $user->email }}</p>
             <p class="profile-joined">Member since {{ $user->created_at->format('F Y') }}</p>
             @if($user->avatar)
-                <button class="btn btn-ghost btn-sm" style="margin-top:.5rem;font-size:.75rem" onclick="removeAvatar()">
+                <button id="remove-avatar-btn" class="btn btn-ghost btn-sm" style="margin-top:.5rem;font-size:.75rem" onclick="removeAvatar()">
                     Remove photo
                 </button>
             @endif
