@@ -131,6 +131,15 @@ class GameController extends Controller
             }, $game['stores']);
         }
 
-        return view('games.show', compact('game'));
+        $reviews = \App\Models\Review::where('game_id', $id)
+                    ->with('user')
+                    ->latest()
+                    ->get();
+
+        $userReview = auth()->check()
+            ? $reviews->firstWhere('user_id', auth()->id())
+            : null;
+
+        return view('games.show', compact('game', 'reviews', 'userReview'));
     }
 }

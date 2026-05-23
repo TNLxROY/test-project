@@ -4,14 +4,57 @@
 
 <div class="profile-hero">
     <div class="profile-hero-inner">
-        <div class="profile-avatar-lg">
-            {{ strtoupper(substr($user->name, 0, 1)) }}{{ strtoupper(substr(strstr($user->name, ' '), 1, 1)) }}
+
+        {{-- Avatar --}}
+        <div class="profile-avatar-wrap" id="avatar-wrap">
+            @if($user->avatar)
+                <img src="{{ Storage::url($user->avatar) }}" alt="Avatar" class="profile-avatar-img" id="avatar-img">
+            @else
+                <div class="profile-avatar-lg" id="avatar-initials">
+                    {{ strtoupper(substr($user->name, 0, 1)) }}{{ strtoupper(substr(strstr($user->name.' ', ' '), 1, 1)) }}
+                </div>
+            @endif
+            <button class="avatar-edit-btn" id="avatar-edit-btn" title="Change photo">
+                <i class="ti ti-camera" aria-hidden="true"></i>
+            </button>
         </div>
+
         <div>
-            <h1 class="profile-name">{{ $user->name }}</h1>
+            <h1 class="profile-name" id="profile-display-name">{{ $user->name }}</h1>
             <p class="profile-email">{{ $user->email }}</p>
             <p class="profile-joined">Member since {{ $user->created_at->format('F Y') }}</p>
+            @if($user->avatar)
+                <button class="btn btn-ghost btn-sm" style="margin-top:.5rem;font-size:.75rem" onclick="removeAvatar()">
+                    Remove photo
+                </button>
+            @endif
         </div>
+    </div>
+</div>
+
+{{-- Avatar crop modal --}}
+<div class="modal-overlay" id="avatar-modal" style="display:none" onclick="if(event.target.id==='avatar-modal') closeAvatarModal()">
+    <div class="modal" style="max-width:380px">
+        <button class="modal-close" onclick="closeAvatarModal()">✕</button>
+        <h2>Set Profile Photo</h2>
+        <p class="modal-sub">Drag the image to reposition, then crop.</p>
+
+        <div class="crop-zone" id="crop-zone">
+            <img id="crop-img" src="" alt="" draggable="false">
+            <div class="crop-circle-overlay"></div>
+        </div>
+
+        <input type="file" id="avatar-file-input" accept="image/png,image/jpeg,image/webp" style="display:none">
+
+        <div style="display:flex;gap:.5rem;margin-top:1rem">
+            <button class="btn btn-ghost btn-sm" style="flex:1" onclick="document.getElementById('avatar-file-input').click()">
+                Choose image
+            </button>
+            <button class="btn btn-primary btn-sm" style="flex:1" onclick="saveAvatar()">
+                Save photo
+            </button>
+        </div>
+        <div class="auth-msg" id="avatar-msg" style="margin-top:.75rem"></div>
     </div>
 </div>
 
@@ -113,8 +156,7 @@
 <div class="notification" id="profile-notif"></div>
 
 <script>
-const csrf = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
-
+// ── Profile utilities ────────────────────────────────
 function profileFetch(url, method, body) {
     return fetch(url, {
         method,
@@ -141,6 +183,7 @@ function showDeleteMsg(msg) {
     el.style.display = 'block';
 }
 
+// ── Name & password ──────────────────────────────────
 async function saveName() {
     const name = document.getElementById('profile-name').value.trim();
     if (!name) return;
@@ -155,8 +198,8 @@ async function saveName() {
 }
 
 async function savePassword() {
-    const current_password  = document.getElementById('cur-pass').value;
-    const password          = document.getElementById('new-pass').value;
+    const current_password      = document.getElementById('cur-pass').value;
+    const password              = document.getElementById('new-pass').value;
     const password_confirmation = document.getElementById('new-pass-confirm').value;
     if (!current_password || !password || !password_confirmation) {
         showProfileNotif('Please fill in all password fields.');
@@ -166,14 +209,15 @@ async function savePassword() {
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
         showProfileNotif('Password updated!');
-        document.getElementById('cur-pass').value = '';
-        document.getElementById('new-pass').value = '';
+        document.getElementById('cur-pass').value        = '';
+        document.getElementById('new-pass').value        = '';
         document.getElementById('new-pass-confirm').value = '';
     } else {
         showProfileNotif(data.message || 'Failed to update password.');
     }
 }
 
+// ── Delete account ───────────────────────────────────
 function openDeleteModal()  { document.getElementById('delete-modal-overlay').style.display = 'flex'; }
 function closeDeleteModal() { document.getElementById('delete-modal-overlay').style.display = 'none'; }
 
@@ -186,6 +230,167 @@ async function confirmDelete() {
         window.location.href = '/';
     } else {
         showDeleteMsg(data.message || 'Incorrect password.');
+    }
+}
+
+// ── Avatar crop ──────────────────────────────────────
+let cropState = { x: 0, y: 0, size: 300, dragging: false, startX: 0, startY: 0, file: null };
+
+document.getElementById('avatar-edit-btn').addEventListener('click', () => {
+    document.getElementById('avatar-modal').style.display = 'flex';
+    if (!cropState.file) document.getElementById('avatar-file-input').click();
+});
+
+function closeAvatarModal() {
+    document.getElementById('avatar-modal').style.display = 'none';
+}
+
+document.getElementById('avatar-file-input').addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+    cropState.file = file;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const img = document.getElementById('crop-img');
+        img.src = e.target.result;
+        img.onload = () => {
+            cropState.x    = 0;
+            cropState.y    = 0;
+            cropState.size = 300;
+            applyCrop();
+        };
+        document.getElementById('avatar-modal').style.display = 'flex';
+    };
+    reader.readAsDataURL(file);
+});
+
+const cropZone = document.getElementById('crop-zone');
+cropZone.addEventListener('mousedown',  startDrag);
+cropZone.addEventListener('touchstart', startDrag, { passive: true });
+
+function startDrag(e) {
+    cropState.dragging = true;
+    const pt = e.touches ? e.touches[0] : e;
+    cropState.startX = pt.clientX - cropState.x;
+    cropState.startY = pt.clientY - cropState.y;
+}
+
+document.addEventListener('mousemove', onDrag);
+document.addEventListener('touchmove', onDrag, { passive: true });
+document.addEventListener('mouseup',   () => cropState.dragging = false);
+document.addEventListener('touchend',  () => cropState.dragging = false);
+
+function onDrag(e) {
+    if (!cropState.dragging) return;
+    const pt = e.touches ? e.touches[0] : e;
+    cropState.x = pt.clientX - cropState.startX;
+    cropState.y = pt.clientY - cropState.startY;
+    applyCrop();
+}
+
+cropZone.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    cropState.size = Math.max(100, Math.min(600, cropState.size - e.deltaY * 0.5));
+    applyCrop();
+}, { passive: false });
+
+function applyCrop() {
+    const img = document.getElementById('crop-img');
+    img.style.transform = `translate(${cropState.x}px, ${cropState.y}px)`;
+    img.style.width     = cropState.size + 'px';
+    img.style.height    = cropState.size + 'px';
+}
+
+async function saveAvatar() {
+    const msg = document.getElementById('avatar-msg');
+    msg.style.display = 'none';
+
+    if (!cropState.file) {
+        msg.innerText     = 'Please choose an image first.';
+        msg.style.display = 'block';
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('avatar',    cropState.file);
+    formData.append('crop_x',    Math.round(-cropState.x));
+    formData.append('crop_y',    Math.round(-cropState.y));
+    formData.append('crop_size', Math.round(cropState.size));
+    formData.append('_token',    csrf);
+
+    const res  = await fetch('/profile/avatar', {
+        method: 'POST',
+        credentials: 'same-origin',
+        body: formData,
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (res.ok) {
+        closeAvatarModal();
+
+        const wrap     = document.getElementById('avatar-wrap');
+        const initials = document.getElementById('avatar-initials');
+        let   imgEl    = document.getElementById('avatar-img');
+
+        if (initials) initials.remove();
+
+        if (!imgEl) {
+            imgEl           = document.createElement('img');
+            imgEl.id        = 'avatar-img';
+            imgEl.alt       = 'Avatar';
+            imgEl.className = 'profile-avatar-img';
+            wrap.prepend(imgEl);
+        }
+        imgEl.src = data.avatar_url;
+
+        if (!document.getElementById('remove-avatar-btn')) {
+            const removeBtn       = document.createElement('button');
+            removeBtn.id          = 'remove-avatar-btn';
+            removeBtn.className   = 'btn btn-ghost btn-sm';
+            removeBtn.style.cssText = 'margin-top:.5rem;font-size:.75rem';
+            removeBtn.textContent = 'Remove photo';
+            removeBtn.onclick     = removeAvatar;
+            document.querySelector('.profile-hero-inner > div:last-child').appendChild(removeBtn);
+        }
+
+        showProfileNotif('Profile photo updated!');
+    } else {
+        msg.innerText     = data.message || data.errors
+            ? (data.message || JSON.stringify(data.errors))
+            : 'Upload failed.';
+        msg.style.display = 'block';
+    }
+}
+
+async function removeAvatar() {
+    const res = await fetch('/profile/avatar', {
+        method: 'DELETE',
+        credentials: 'same-origin',
+        headers: {
+            'X-CSRF-TOKEN': csrf,
+            'Accept':       'application/json',
+        },
+    });
+
+    if (res.ok) {
+        const imgEl = document.getElementById('avatar-img');
+        const wrap  = document.getElementById('avatar-wrap');
+        const name  = document.getElementById('profile-display-name')?.innerText || '?';
+
+        if (imgEl) imgEl.remove();
+
+        const initials         = document.createElement('div');
+        initials.id            = 'avatar-initials';
+        initials.className     = 'profile-avatar-lg';
+        initials.textContent   = name[0].toUpperCase();
+        wrap.prepend(initials);
+
+        document.getElementById('remove-avatar-btn')?.remove();
+        cropState.file = null;
+
+        showProfileNotif('Profile photo removed.');
     }
 }
 </script>

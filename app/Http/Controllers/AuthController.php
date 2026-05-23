@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -23,15 +24,17 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
+        $user = Auth::user();
+
         return response()->json([
             'message' => 'Logged in.',
             'user'    => [
-                'id'     => Auth::user()->id,
-                'name'   => Auth::user()->name,
-                'email'  => Auth::user()->email,
-                'avatar' => Auth::user()->avatar ?? null,
+                'id'         => $user->id,
+                'name'       => $user->name,
+                'email'      => $user->email,
+                'avatar_url' => $user->avatar ? Storage::url($user->avatar) : null,
             ],
-        ]);
+        ], 200);
     }
 
     public function register(Request $request)
@@ -53,11 +56,11 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Account created.',
-            'user'    => [
-                'id'     => $user->id,
-                'name'   => $user->name,
-                'email'  => $user->email,
-                'avatar' => $user->avatar ?? null,
+            'user' => [
+                'id'         => $user->id,
+                'name'       => $user->name,
+                'email'      => $user->email,
+                'avatar_url' => $user->avatar ? Storage::url($user->avatar) : null,
             ],
         ], 201);
     }

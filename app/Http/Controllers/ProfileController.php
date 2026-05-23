@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class ProfileController extends Controller
 {
@@ -56,5 +59,65 @@ class ProfileController extends Controller
         $user->delete();
 
         return response()->json(['message' => 'Account deleted.']);
+    }
+
+    public function updateAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar'    => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'crop_x'    => ['required', 'numeric'],
+            'crop_y'    => ['required', 'numeric'],
+            'crop_size' => ['required', 'numeric', 'min:1'],
+        ]);
+
+        $user = Auth::user();
+
+        if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+            Storage::disk('public')->delete($user->avatar);
+        }
+
+        $manager = new ImageManager(new Driver());
+        $image   = $manager->read($request->file('avatar')->getRealPath());
+
+        $origW   = $image->width();
+        $origH   = $image->height();
+        $scaleX  = $origW / 300;
+        $scaleY  = $origH / 300;
+        $scale   = max($scaleX, $scaleY);
+
+        $cropSize = (int) round($request->crop_size * $scale);
+        $cropX    = (int) round($request->crop_x   * $scaleX);
+        $cropY    = (int) round($request->crop_y   * $scaleY);
+
+        $cropX    = max(0, min($cropX, $origW - $cropSize));
+        $cropY    = max(0, min($cropY, $origH - $cropSize));
+        $cropSize = min($cropSize, $origW - $cropX, $origH - $cropY);
+
+        $image->crop($cropSize, $cropSize, $cropX, $cropY);
+        $image->resize(200, 200);
+
+        Storage::disk('public')->makeDirectory('avatars');
+        $filename = 'avatars/' . $user->id . '_' . time() . '.png';
+        Storage::disk('public')->put($filename, $image->toPng());
+
+        $user->update(['avatar' => $filename]);
+
+        return response()->json([
+            'message'    => 'Avatar updated.',
+            'avatar_url' => Storage::url($filename) . '?v=' . time(),
+        ]);
+    }
+
+    public function deleteAvatar()
+    {
+        $user = Auth::user();
+
+        if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+            Storage::disk('public')->delete($user->avatar);
+        }
+
+        $user->update(['avatar' => null]);
+
+        return response()->json(['message' => 'Avatar removed.']);
     }
 }

@@ -101,16 +101,19 @@ function renderUser(user) {
     if (dEmail) dEmail.innerText = email;
 
     container.innerHTML = `
-        <div class="user-chip" id="user-chip">
-            <div class="avatar">${initials}</div>
-            <span class="username">${name}</span>
-            <button class="kebab-btn" id="kebab-btn" aria-label="User menu">
-                <span class="dot"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
-            </button>
-        </div>
-    `;
+    <div class="user-chip" id="user-chip">
+        ${user.avatar_url
+            ? `<img src="${user.avatar_url}" class="avatar avatar-img-chip" alt="${name}">`
+            : `<div class="avatar">${initials}</div>`
+        }
+        <span class="username">${name}</span>
+        <button class="kebab-btn" id="kebab-btn" aria-label="User menu">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+        </button>
+    </div>
+`;
 
     // toggle dropdown on kebab click
     document.getElementById('kebab-btn').addEventListener('click', (e) => {
@@ -240,3 +243,99 @@ window.doRegister = async () => {
 // INIT — check login state on page load
 // -------------------------
 document.addEventListener('DOMContentLoaded', refreshAuthUI);
+
+const reviewCsrf = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+
+window.switchShowTab = function(tab) {
+    ['info','reviews','write'].forEach(t => {
+        document.getElementById('panel-' + t).style.display = t === tab ? 'block' : 'none';
+        const btn = document.getElementById('tab-' + t);
+        if (btn) btn.classList.toggle('active', t === tab);
+    });
+}
+
+// character counter
+const textarea = document.getElementById('review-body');
+if (textarea) {
+    textarea.addEventListener('input', () => {
+        document.getElementById('char-count').textContent = textarea.value.length;
+    });
+}
+
+window.submitReview = async function(gameId, gameName) {
+    const body = document.getElementById('review-body')?.value.trim();
+    const msg  = document.getElementById('review-msg');
+
+    if (!body || body.length < 10) {
+        msg.innerText = 'Review must be at least 10 characters.';
+        msg.style.display = 'block';
+        return;
+    }
+
+    const res  = await fetch(`/games/${gameId}/reviews`, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': reviewCsrf,
+        },
+        body: JSON.stringify({ body, game_name: gameName }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (res.ok) {
+        const list  = document.querySelector('#panel-reviews .reviews-layout');
+        const empty = list?.querySelector('.reviews-empty');
+        if (empty) empty.remove();
+
+        const card = document.createElement('div');
+        card.className = 'review-card';
+        card.id = 'review-' + data.review.id;
+        card.innerHTML = `
+            <div class="review-header">
+                <div class="review-avatar">${data.review.user.name[0].toUpperCase()}</div>
+                <div>
+                    <div class="review-author">${data.review.user.name}</div>
+                    <div class="review-date">${data.review.created_at}</div>
+                </div>
+                <button class="review-delete-btn" onclick="deleteReview(${data.review.id}, ${gameId})">
+                    <i class="ti ti-trash" aria-hidden="true"></i>
+                </button>
+            </div>
+            <p class="review-body">${data.review.body}</p>
+        `;
+        list.prepend(card);
+
+        const badge = document.getElementById('review-count-badge');
+        if (badge) badge.textContent = parseInt(badge.textContent || 0) + 1;
+
+        const writeBtn = document.getElementById('tab-write');
+        if (writeBtn) {
+            writeBtn.outerHTML = `<span class="reviewed-badge"><i class="ti ti-circle-check"></i> You reviewed this</span>`;
+        }
+
+        switchShowTab('reviews');
+    } else {
+        msg.innerText = data.message || 'Failed to post review.';
+        msg.style.display = 'block';
+    }
+}
+
+window.deleteReview = async function(reviewId, gameId) {
+    const res = await fetch(`/games/${gameId}/reviews/${reviewId}`, {
+        method: 'DELETE',
+        credentials: 'same-origin',
+        headers: {
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': reviewCsrf,
+        },
+    });
+
+    if (res.ok) {
+        document.getElementById('review-' + reviewId)?.remove();
+        const badge = document.getElementById('review-count-badge');
+        if (badge) badge.textContent = Math.max(0, parseInt(badge.textContent || 1) - 1);
+    }
+}

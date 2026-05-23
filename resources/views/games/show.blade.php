@@ -6,9 +6,7 @@
 <div class="show-hero" style="background-image: url('{{ $game['background_image_additional'] ?? $game['background_image'] ?? '' }}')">
     <div class="show-hero-overlay"></div>
     <div class="show-hero-content">
-        <a href="{{ route('games.index') }}" class="back-link">
-            ← Back to results
-        </a>
+        <a href="{{ route('games.index') }}" class="back-link">← Back to results</a>
         <div class="show-hero-meta">
             @if(!empty($game['esrb_rating']['name']))
                 <span class="esrb-badge">{{ $game['esrb_rating']['name'] }}</span>
@@ -26,9 +24,36 @@
                 <span class="genre-pill">{{ $genre['name'] }}</span>
             @endforeach
         </div>
+
+        {{-- Tab toggle buttons --}}
+        <div class="show-tabs">
+            <button class="show-tab active" id="tab-info"    onclick="switchShowTab('info')">
+                <i class="ti ti-info-circle" aria-hidden="true"></i> Game Info
+            </button>
+            <button class="show-tab"         id="tab-reviews" onclick="switchShowTab('reviews')">
+                <i class="ti ti-message-circle" aria-hidden="true"></i> Reviews
+                <span class="review-count-badge" id="review-count-badge">{{ count($reviews) }}</span>
+            </button>
+            @auth
+                @if(!$userReview)
+                    <button class="show-tab show-tab-accent" id="tab-write" onclick="switchShowTab('write')">
+                        <i class="ti ti-pencil" aria-hidden="true"></i> Write a Review
+                    </button>
+                @else
+                    <span class="reviewed-badge">
+                        <i class="ti ti-circle-check" aria-hidden="true"></i> You reviewed this
+                    </span>
+                @endif
+            @else
+                <button class="show-tab" onclick="openModal('login')">
+                    <i class="ti ti-pencil" aria-hidden="true"></i> Write a Review
+                </button>
+            @endauth
+        </div>
     </div>
 </div>
 
+<div id="panel-info">
 <div class="show-layout">
 
     {{-- LEFT COLUMN --}}
@@ -323,6 +348,64 @@
         </div>
         @endif
 
+    </div>
+    </div>
+</div>
+
+{{-- ── REVIEWS PANEL ── --}}
+<div id="panel-reviews" style="display:none">
+    <div class="reviews-layout">
+        @if(count($reviews) === 0)
+            <div class="reviews-empty">
+                <i class="ti ti-message-off reviews-empty-icon" aria-hidden="true"></i>
+                <h3>No reviews yet</h3>
+                <p>Be the first to share your thoughts on {{ $game['name'] }}.</p>
+            </div>
+        @else
+            @foreach($reviews as $review)
+            <div class="review-card" id="review-{{ $review->id }}">
+                <div class="review-header">
+                    <div class="review-avatar">
+                        {{ strtoupper(substr($review->user->name, 0, 1)) }}
+                    </div>
+                    <div>
+                        <div class="review-author">{{ $review->user->name }}</div>
+                        <div class="review-date">{{ $review->created_at->format('M j, Y') }}</div>
+                    </div>
+                    @auth
+                        @if(Auth::id() === $review->user_id)
+                        <button class="review-delete-btn"
+                            onclick="deleteReview({{ $review->id }}, {{ $game['id'] }})">
+                            <i class="ti ti-trash" aria-hidden="true"></i>
+                        </button>
+                        @endif
+                    @endauth
+                </div>
+                <p class="review-body">{{ $review->body }}</p>
+            </div>
+            @endforeach
+        @endif
+    </div>
+</div>
+
+{{-- ── WRITE REVIEW PANEL ── --}}
+<div id="panel-write" style="display:none">
+    <div class="reviews-layout">
+        <div class="show-card write-review-card">
+            <h2 class="show-card-title">Your Review</h2>
+            <p class="write-review-sub">Share your thoughts on <strong>{{ $game['name'] }}</strong></p>
+            <div class="form-group" style="margin-top:1rem">
+                <label>Review</label>
+                <textarea id="review-body" class="review-textarea"
+                    placeholder="What did you think of this game? (min. 10 characters)"
+                    maxlength="2000"></textarea>
+                <div class="review-char-count"><span id="char-count">0</span> / 2000</div>
+            </div>
+            <button class="btn btn-primary" onclick="submitReview({{ $game['id'] }}, '{{ addslashes($game['name']) }}')">
+                Post Review
+            </button>
+            <div class="auth-msg" id="review-msg" style="margin-top:.75rem"></div>
+        </div>
     </div>
 </div>
 

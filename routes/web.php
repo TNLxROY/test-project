@@ -29,10 +29,10 @@ Route::get('/api/user', function () {
     $user = auth()->user();
     return response()->json([
         'user' => $user ? [
-            'id'     => $user->id,
-            'name'   => $user->name,
-            'email'  => $user->email,
-            'avatar' => $user->avatar ?? null,
+            'id'         => $user->id,
+            'name'       => $user->name,
+            'email'      => $user->email,
+            'avatar_url' => $user->avatar ? Storage::url($user->avatar) : null,
         ] : null
     ]);
 })->middleware('web');
@@ -46,8 +46,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/name',            [App\Http\Controllers\ProfileController::class, 'updateName']);
     Route::post('/profile/password',        [App\Http\Controllers\ProfileController::class, 'updatePassword']);
     Route::delete('/profile/delete',        [App\Http\Controllers\ProfileController::class, 'deleteAccount']);
+    Route::post('/profile/avatar',   [App\Http\Controllers\ProfileController::class, 'updateAvatar']);
+    Route::delete('/profile/avatar', [App\Http\Controllers\ProfileController::class, 'deleteAvatar']);
 });
 
 Route::get('/games', [GameController::class, 'index'])->name('games.index');
 Route::get('/games/search', [GameController::class, 'search'])->name('games.search');
 Route::get('/games/{id}', [GameController::class, 'show'])->name('games.show');
+
+Route::middleware('auth')->group(function () {
+    Route::post('/games/{gameId}/reviews',           [App\Http\Controllers\ReviewController::class, 'store']);
+    Route::delete('/games/{gameId}/reviews/{reviewId}', [App\Http\Controllers\ReviewController::class, 'destroy']);
+});
