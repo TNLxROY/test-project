@@ -24,7 +24,7 @@ class UserController extends Controller
 
     public function show(User $user)
     {
-        $reviews = Review::where('user_id', $user->id)
+        $reviews = \App\Models\Review::where('user_id', $user->id)
             ->latest()
             ->get();
 
@@ -32,6 +32,10 @@ class UserController extends Controller
             ? Storage::url($user->avatar)
             : null;
 
-        return view('users.show', compact('user', 'reviews', 'avatarUrl'));
+        $friendship = auth()->check()
+            ? auth()->user()->friendshipWith($user)
+            : null;
+
+        return view('users.show', compact('user', 'reviews', 'avatarUrl', 'friendship'));
     }
 }

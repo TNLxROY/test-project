@@ -17,6 +17,9 @@
         <a href="{{ route('profile') }}" class="dropdown-item">
             <i class="ti ti-user" aria-hidden="true"></i> Profile
         </a>
+        <a href="{{ route('friends.index') }}" class="dropdown-item">
+            <i class="ti ti-users" aria-hidden="true"></i> Friends
+        </a>
         <a href="{{ route('games.index') }}" class="dropdown-item">
             <i class="ti ti-device-gamepad-2" aria-hidden="true"></i> Browse Games
         </a>

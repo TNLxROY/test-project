@@ -1812,3 +1812,45 @@ footer{
     .player-hero-stats { justify-content: center; }
     .player-row { border-radius: 16px; }
 }
+
+/* ── Friends ────────────────────────────────────────── */
+.friends-section {
+    margin-bottom: 2rem;
+}
+.friends-section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: .85rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+.friend-btn-wrap {
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+    margin-top: .75rem;
+}
+.friend-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+}
+.friend-btn-remove {
+    border-color: rgba(232,25,44,.3);
+    color: var(--accent2);
+}
+.friend-btn-remove:hover {
+    background: rgba(232,25,44,.1);
+    border-color: var(--accent);
+}
+.friend-request-actions {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    flex-shrink: 0;
+}

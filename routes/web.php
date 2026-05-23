@@ -61,3 +61,12 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/users',        [App\Http\Controllers\UserController::class, 'index'])->name('users.index');
 Route::get('/users/{user}', [App\Http\Controllers\UserController::class, 'show'])->name('users.show');
+
+Route::middleware('auth')->group(function () {
+    // ... existing auth routes ...
+    Route::get('/friends',                          [App\Http\Controllers\FriendshipController::class, 'index'])->name('friends.index');
+    Route::post('/users/{user}/friend',             [App\Http\Controllers\FriendshipController::class, 'send'])->name('friends.send');
+    Route::post('/users/{user}/friend/accept',      [App\Http\Controllers\FriendshipController::class, 'accept'])->name('friends.accept');
+    Route::post('/users/{user}/friend/decline',     [App\Http\Controllers\FriendshipController::class, 'decline'])->name('friends.decline');
+    Route::delete('/users/{user}/friend',           [App\Http\Controllers\FriendshipController::class, 'remove'])->name('friends.remove');
+});
