@@ -345,3 +345,36 @@ window.deleteReview = async function(reviewId, gameId) {
         if (badge) badge.textContent = Math.max(0, parseInt(badge.textContent || 1) - 1);
     }
 }
+
+// -------------------------
+// HAMBURGER NAV
+// -------------------------
+document.addEventListener('DOMContentLoaded', () => {
+    const hamburger = document.getElementById('hamburger');
+    const navLinks  = document.getElementById('nav-links');
+
+    if (!hamburger || !navLinks) return;
+
+    // toggle on button click
+    hamburger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navLinks.classList.toggle('nav-open');
+        hamburger.classList.toggle('hamburger-open');
+    });
+
+    // close when a nav link is clicked
+    navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            navLinks.classList.remove('nav-open');
+            hamburger.classList.remove('hamburger-open');
+        });
+    });
+
+    // close when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!navLinks.contains(e.target) && !hamburger.contains(e.target)) {
+            navLinks.classList.remove('nav-open');
+            hamburger.classList.remove('hamburger-open');
+        }
+    });
+});

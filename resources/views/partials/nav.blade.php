@@ -1,6 +1,6 @@
 <nav>
     <span class="logo">Fact<span>.</span>Speakers</span>
-    <div class="nav-links">
+    <div class="nav-links" id="nav-links">
         <a href="/">Home</a>
         <a href="/about">About</a>
         <a href="/games">Games</a>
@@ -8,7 +8,14 @@
         <a href="{{ route('users.index') }}">Users</a>
         <a style="color:var(--muted)">Membership</a>
     </div>
-    <div id="mini-profile-container"></div>
+    <div class="nav-right">
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <div id="mini-profile-container"></div>
+    </div>
     <div class="user-dropdown" id="user-dropdown">
         <div class="dropdown-header">
             <div class="d-name" id="dropdown-name"></div>
