@@ -38,11 +38,13 @@ nav {
     font-weight: 800;
     letter-spacing: -0.5px;
     color: var(--text);
-    flex-shrink: 0; /* never let the logo shrink */
+    flex-shrink: 0;
     white-space: nowrap;
+    text-decoration: none;
+    font-family: 'Syne', sans-serif;
 }
-.logo span{
-    color:var(--accent)
+.logo span {
+    color: var(--accent);
 }
 .nav-links {
     display: flex;
@@ -1552,6 +1554,14 @@ footer{
 }
 .kebab-btn:hover .dot { background: var(--accent2); }
 
+.username {
+    font-size: .85rem;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+}
+
 /* old username-only link rule — no longer needed */
 .user-chip a.username { color: var(--text); text-decoration: none; }
 .user-chip a.username:hover { color: var(--accent2); }
@@ -1936,4 +1946,16 @@ footer{
     }
     .nav-links a:last-child { border-bottom: none; }
     .nav-links a:hover { color: var(--text) !important; }
+}
+
+.hero-greeting {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.2rem, 3vw, 1.6rem);
+    font-weight: 700;
+    color: var(--text);
+    margin-top: .5rem;
+}
+.hero-greeting em {
+    color: var(--accent2);
+    font-style: normal;
 }

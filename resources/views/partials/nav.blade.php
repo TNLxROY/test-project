@@ -1,5 +1,5 @@
 <nav>
-    <span class="logo">Fact<span>.</span>Speakers</span>
+    <a href="/" class="logo">Fact<span>.</span>Speakers</a>
     <div class="nav-links" id="nav-links">
         <a href="/">Home</a>
         <a href="/about">About</a>

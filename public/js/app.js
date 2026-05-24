@@ -22,6 +22,14 @@ async function authFetch(url, options = {}) {
 }
 
 // -------------------------
+// STYLED USERNAME (random red character)
+// -------------------------
+function styledUsername(name) {
+    if (!name) return '';
+    return `<span style="color:var(--accent);font-weight:inherit;font-size:inherit;font-family:inherit;line-height:inherit">${name[0]}</span>${name.slice(1)}`;
+}
+
+// -------------------------
 // MODAL
 // -------------------------
 window.openModal = (tab = 'login') => {
@@ -84,18 +92,16 @@ function renderUser(user) {
                 <button class="btn btn-primary btn-sm" data-action="open-register">Sign up</button>
             </div>
         `;
-        // hide dropdown if visible
         const dd = document.getElementById('user-dropdown');
         if (dd) dd.classList.remove('open');
         return;
     }
 
-    const name = user.name || '';
-    const email = user.email || '';
+    const name     = user.name || '';
+    const email    = user.email || '';
     const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
 
-    // populate dropdown header
-    const dName = document.getElementById('dropdown-name');
+    const dName  = document.getElementById('dropdown-name');
     const dEmail = document.getElementById('dropdown-email');
     if (dName)  dName.innerText  = name;
     if (dEmail) dEmail.innerText = email;
@@ -107,7 +113,7 @@ function renderUser(user) {
                     ? `<img src="${user.avatar_url}" class="avatar avatar-img-chip" alt="${name}">`
                     : `<div class="avatar">${initials}</div>`
                 }
-                <span class="username">${name}</span>
+                <span class="username">${styledUsername(name)}</span>
             </a>
             <button class="kebab-btn" id="kebab-btn" aria-label="User menu">
                 <span class="dot"></span>
@@ -117,12 +123,27 @@ function renderUser(user) {
         </div>
     `;
 
-    // toggle dropdown on kebab click
     document.getElementById('kebab-btn').addEventListener('click', (e) => {
-    e.stopPropagation();
-    const dd = document.getElementById('user-dropdown');
-    if (dd) dd.classList.toggle('open');
+        e.stopPropagation();
+        const dd = document.getElementById('user-dropdown');
+        if (dd) dd.classList.toggle('open');
     });
+
+    // ── Hero greeting (home page only) ──────────────────
+    const greetingEl = document.getElementById('hero-greeting');
+    if (greetingEl) {
+        const hour = new Date().getHours();
+        let greeting;
+
+        if (hour >= 5  && hour < 12) greeting = 'Good morning';
+        else if (hour >= 12 && hour < 18) greeting = 'Good afternoon';
+        else if (hour >= 18 && hour < 23) greeting = 'Good evening';
+        else                              greeting = 'Good night';
+
+        greetingEl.innerHTML = name
+            ? `${greeting}, <em>${styledUsername(name)}</em>`
+            : greeting;
+    }
 }
 
 // close dropdown when clicking outside
@@ -132,7 +153,6 @@ document.addEventListener('click', (e) => {
 });
 
 // Only used on initial page load to check if user is already logged in.
-// After login/logout we use renderUser() directly instead of asking the server again.
 async function refreshAuthUI() {
     try {
         const res  = await authFetch('/api/user?_=' + Date.now());
@@ -197,7 +217,7 @@ window.doLogin = async () => {
         if (res.ok) {
             showNotif('Logged in!');
             closeModal();
-            renderUser(data.user); // use the user data already in the login response
+            renderUser(data.user);
             location.reload();
         } else {
             showMsg(data.message || 'Login failed.');
@@ -232,7 +252,7 @@ window.doRegister = async () => {
         if (res.ok) {
             showNotif('Account created!');
             closeModal();
-            renderUser(data.user); // use the user data already in the register response
+            renderUser(data.user);
             location.reload();
         } else {
             const firstError = data.errors
@@ -278,7 +298,7 @@ window.submitReview = async function(gameId, gameName) {
         return;
     }
 
-    const res  = await fetch(`/games/${gameId}/reviews`, {
+    const res = await fetch(`/games/${gameId}/reviews`, {
         method: 'POST',
         credentials: 'same-origin',
         headers: {
@@ -355,14 +375,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!hamburger || !navLinks) return;
 
-    // toggle on button click
     hamburger.addEventListener('click', (e) => {
         e.stopPropagation();
         navLinks.classList.toggle('nav-open');
         hamburger.classList.toggle('hamburger-open');
     });
 
-    // close when a nav link is clicked
     navLinks.querySelectorAll('a').forEach(link => {
         link.addEventListener('click', () => {
             navLinks.classList.remove('nav-open');
@@ -370,11 +388,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // close when clicking outside
     document.addEventListener('click', (e) => {
         if (!navLinks.contains(e.target) && !hamburger.contains(e.target)) {
             navLinks.classList.remove('nav-open');
             hamburger.classList.remove('hamburger-open');
         }
+    });
+});
+
+// -------------------------
+// STYLED USERNAMES ON USERS PAGE
+// -------------------------
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.player-name').forEach(el => {
+        el.innerHTML = styledUsername(el.innerText.trim());
     });
 });

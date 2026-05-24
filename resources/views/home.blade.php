@@ -5,10 +5,16 @@
   <div class="hero">
     <h1>Write. Share.<br><em>Connect.</em></h1>
     <p>Are you also sick of those terrible reviews of you favourite games created by the so called 'proffesionals'? let's create a platform together where we can share our own thoughts and experiences.</p>
-    <div class="hero-btns">
-      <button class="btn btn-primary btn-lg" onclick="openModal('register')">Become a Fact Speaker</button>
-      <button class="btn btn-ghost btn-lg" onclick="showPage('about')">Learn more</button>
-    </div>
+
+    @auth
+        <div class="hero-greeting" id="hero-greeting"></div>
+    @else
+        <div class="hero-btns">
+            <button class="btn btn-primary btn-lg" onclick="openModal('register')">Become a Fact Speaker</button>
+            <button class="btn btn-ghost btn-lg" onclick="showPage('about')">Learn more</button>
+        </div>
+    @endauth
+
   </div>
 
   <div class="section">
@@ -46,7 +52,7 @@
       <div class="post-card">
         <span class="post-tag">Review</span>
         <h3>Lorem ipsum dolor sit amet</h3>
-        <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor   .</p>
+        <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</p>
         <div class="post-meta"><div class="avatar">LW</div><span>Liam W. · 10 min read</span></div>
       </div>
       <div class="post-card">
