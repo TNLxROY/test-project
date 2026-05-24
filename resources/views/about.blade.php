@@ -11,10 +11,12 @@
     <div class="section-title">Our values</div>
     <div class="section-sub">What guides every decision we make</div>
     <div class="values-grid">
-      <div class="value-card"><div class="value-icon">◈</div><h3>Quality over quantity</h3><p>We don't chase engagement metrics. A single thoughtful post beats ten hot takes.</p></div>
-      <div class="value-card"><div class="value-icon">⬡</div><h3>Open by default</h3><p>All content is free to read. We sustain the platform through optional memberships.</p></div>
-      <div class="value-card"><div class="value-icon">◉</div><h3>No dark patterns</h3><p>No infinite scroll, no push-notification spam. Your attention is yours to spend.</p></div>
-      <div class="value-card"><div class="value-icon">⬢</div><h3>Community-shaped</h3><p>Features come from members. Our roadmap is literally a public forum thread.</p></div>
+      <div class="value-card"><div class="value-icon">👌</div><h3>Quality over quantity</h3><p>We don't chase engagement metrics. A single thoughtful post beats ten hot takes.</p></div>
+      <div class="value-card"><div class="value-icon">🔓</div><h3>Open by default</h3><p>All content is free to read. We sustain the platform through optional memberships.</p></div>
+      <div class="value-card"><div class="value-icon">❌</div><h3>No dark patterns</h3><p>No infinite scroll, no push-notification spam. Your attention is yours to spend.</p></div>
+      <div class="value-card"><div class="value-icon">👥</div><h3>Community-shaped</h3><p>Features come from members. Our roadmap is literally a public forum thread.</p></div>
+      <div class="value-card"><div class="value-icon">🤬</div><h3>Freedom of speech</h3><p>Vulgar language is allowed as long as it isn't pure harassment (Racism, sexism etc.).</p></div>
+      <div class="value-card"><div class="value-icon">🎉</div><h3>And most importantly: have fun</h3><p>Everyone is allowed to have their own opinions, and we encourage respectful dialogue.</p></div>
     </div>
   </div>
 

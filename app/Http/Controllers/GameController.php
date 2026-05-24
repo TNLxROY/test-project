@@ -118,8 +118,8 @@ class GameController extends Controller
 
         $game = $response->json();
 
-        $stores = $this->rawg->getGameStores($id);
-
+        // RAWG stores
+        $stores    = $this->rawg->getGameStores($id);
         $storeUrls = collect($stores['results'] ?? [])
             ->keyBy('store_id')
             ->map(fn($s) => $s['url']);
@@ -131,15 +131,57 @@ class GameController extends Controller
             }, $game['stores']);
         }
 
+        // RAWG screenshots
+        $screenshotsRes = Http::get("https://api.rawg.io/api/games/{$id}/screenshots", [
+            'key' => $apiKey,
+        ]);
+        $screenshots = $screenshotsRes->json()['results'] ?? [];
+
+        // RAWG achievements
+        $achievementsRes = Http::get("https://api.rawg.io/api/games/{$id}/achievements", [
+            'key' => $apiKey,
+        ]);
+        $achievements = $achievementsRes->json()['results'] ?? [];
+
+        // RAWG suggested games
+        $suggestedRes = Http::get("https://api.rawg.io/api/games/{$id}/suggested", [
+            'key' => $apiKey,
+        ]);
+        $suggested = $suggestedRes->json()['results'] ?? [];
+
+        // RAWG game series
+        $seriesRes = Http::get("https://api.rawg.io/api/games/{$id}/game-series", [
+            'key' => $apiKey,
+        ]);
+        $gameSeries = $seriesRes->json()['results'] ?? [];
+
+        // IGDB — search by name for richer data
+        $igdb       = app(\App\Services\IgdbService::class);
+        $igdbGame   = Cache::remember("igdb_game_{$id}", 3600 * 6, function () use ($igdb, $game) {
+            return $igdb->searchGame($game['name']);
+        });
+
+        $igdbCharacters = [];
+        if (!empty($igdbGame['id'])) {
+            $igdbCharacters = Cache::remember("igdb_chars_{$igdbGame['id']}", 3600 * 6, function () use ($igdb, $igdbGame) {
+                return $igdb->getCharacters($igdbGame['id']);
+            });
+        }
+
+        // reviews
         $reviews = \App\Models\Review::where('game_id', $id)
-                    ->with('user')
-                    ->latest()
-                    ->get();
+            ->with('user')
+            ->latest()
+            ->get();
 
         $userReview = auth()->check()
             ? $reviews->firstWhere('user_id', auth()->id())
             : null;
 
-        return view('games.show', compact('game', 'reviews', 'userReview'));
+        return view('games.show', compact(
+            'game', 'reviews', 'userReview',
+            'screenshots', 'achievements', 'suggested', 'gameSeries',
+            'igdbGame', 'igdbCharacters'
+        ));
     }
 }

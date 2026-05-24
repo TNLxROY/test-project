@@ -143,20 +143,24 @@
 
                 @foreach($game['platforms'] as $p)
                     @php
-                        $slug    = $p['platform']['slug'] ?? '';
-                        $pi      = $platformIcons[$slug] ?? $defaultPlatform;
+                        $slug = $p['platform']['slug'] ?? '';
+                        $pi   = $platformIcons[$slug] ?? $defaultPlatform;
                     @endphp
                     <div class="platform-item">
                         <div class="platform-item-header">
                             <i class="ti {{ $pi['icon'] }} platform-icon"
-                            style="color: {{ $pi['color'] }}"
-                            aria-hidden="true"></i>
-                        <span class="platform-name">{{ $p['platform']['name'] }}</span>
-                    </div>
-                        @if(!empty($p['released_at']))
-                            <span class="platform-date">{{ $p['released_at'] }}</span>
-                        @endif
-                            @if(!empty($p['requirements']['minimum']) || !empty($p['requirements']['recommended']))
+                             style="color: {{ $pi['color'] }}"
+                             aria-hidden="true"></i>
+                            <div class="platform-info">
+                                <span class="platform-name">{{ $p['platform']['name'] }}</span>
+                                @if(!empty($p['released_at']))
+                                    <span class="platform-date">{{ $p['released_at'] }}</span>
+                                @else
+                                    <span class="platform-date" style="font-style:italic;opacity:.4;font-size:.72rem">Date unknown</span>
+                                @endif
+                            </div>
+                        </div>
+                        @if(!empty($p['requirements']['minimum']) || !empty($p['requirements']['recommended']))
                             <div class="sysreq">
                                 @if(!empty($p['requirements']['minimum']))
                                     <p class="sysreq-label">Minimum</p>
@@ -203,6 +207,123 @@
         </div>
         @endif
 
+        {{-- Screenshots --}}
+        @if(!empty($screenshots))
+        <div class="show-card">
+            <h2 class="show-card-title">Screenshots</h2>
+            <div class="screenshots-grid">
+                @foreach($screenshots as $shot)
+                    <a href="{{ $shot['image'] }}" target="_blank" class="screenshot-item">
+                        <img src="{{ $shot['image'] }}" alt="Screenshot" loading="lazy">
+                    </a>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        {{-- Characters (IGDB) --}}
+        @if(!empty($igdbCharacters))
+        <div class="show-card">
+            <h2 class="show-card-title">Characters</h2>
+            <div class="characters-grid">
+                @foreach($igdbCharacters as $char)
+                <div class="character-card">
+                    @if(!empty($char['mug_shot']['url']))
+                        <img
+                            src="https:{{ str_replace('t_thumb', 't_cover_big', $char['mug_shot']['url']) }}"
+                            alt="{{ $char['name'] }}"
+                            class="character-img"
+                        >
+                    @else
+                        <div class="character-img character-img-placeholder">
+                            <i class="ti ti-user" aria-hidden="true"></i>
+                        </div>
+                    @endif
+                    <div class="character-info">
+                        <span class="character-name">{{ $char['name'] }}</span>
+                        @if(!empty($char['description']))
+                            <p class="character-desc">{{ Str::limit($char['description'], 120) }}</p>
+                        @endif
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        {{-- Achievements --}}
+        @if(!empty($achievements))
+        <div class="show-card">
+            <h2 class="show-card-title">Achievements</h2>
+            <div class="achievements-list">
+                @foreach(array_slice($achievements, 0, 12) as $ach)
+                <div class="achievement-item">
+                    @if(!empty($ach['image']))
+                        <img src="{{ $ach['image'] }}" alt="{{ $ach['name'] }}" class="achievement-img">
+                    @else
+                        <div class="achievement-img achievement-img-placeholder">
+                            <i class="ti ti-trophy" aria-hidden="true"></i>
+                        </div>
+                    @endif
+                    <div class="achievement-info">
+                        <span class="achievement-name">{{ $ach['name'] }}</span>
+                        @if(!empty($ach['description']))
+                            <span class="achievement-desc">{{ $ach['description'] }}</span>
+                        @endif
+                        @if(!empty($ach['percent']))
+                            <span class="achievement-percent">{{ number_format($ach['percent'], 1) }}% of players</span>
+                        @endif
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        {{-- IGDB extra info --}}
+        @if(!empty($igdbGame))
+        <div class="show-card">
+            <h2 class="show-card-title">Additional Info</h2>
+            <dl class="detail-list">
+                @if(!empty($igdbGame['franchise']['name']))
+                <div class="detail-row">
+                    <dt>Franchise</dt>
+                    <dd>{{ $igdbGame['franchise']['name'] }}</dd>
+                </div>
+                @endif
+                @if(!empty($igdbGame['game_modes']))
+                <div class="detail-row">
+                    <dt>Game Modes</dt>
+                    <dd>{{ implode(', ', array_column($igdbGame['game_modes'], 'name')) }}</dd>
+                </div>
+                @endif
+                @if(!empty($igdbGame['player_perspectives']))
+                <div class="detail-row">
+                    <dt>Perspective</dt>
+                    <dd>{{ implode(', ', array_column($igdbGame['player_perspectives'], 'name')) }}</dd>
+                </div>
+                @endif
+                @if(!empty($igdbGame['themes']))
+                <div class="detail-row">
+                    <dt>Themes</dt>
+                    <dd>{{ implode(', ', array_column($igdbGame['themes'], 'name')) }}</dd>
+                </div>
+                @endif
+                @if(!empty($igdbGame['total_rating']))
+                <div class="detail-row">
+                    <dt>IGDB Rating</dt>
+                    <dd>{{ number_format($igdbGame['total_rating'], 1) }} / 100 ({{ number_format($igdbGame['total_rating_count']) }} votes)</dd>
+                </div>
+                @endif
+                @if(!empty($igdbGame['storyline']))
+                <div class="detail-row" style="flex-direction:column;gap:.5rem">
+                    <dt>Storyline</dt>
+                    <dd style="text-align:left;color:var(--muted);font-size:.83rem;line-height:1.6">{{ $igdbGame['storyline'] }}</dd>
+                </div>
+                @endif
+            </dl>
+        </div>
+        @endif
     </div>
 
     {{-- RIGHT COLUMN --}}
@@ -316,6 +437,42 @@
                 @foreach($game['stores'] as $s)
                 <a href="{{ $s['url'] ?? '#' }}" target="_blank" class="store-btn">
                     {{ $s['store']['name'] }} ↗
+                </a>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        {{-- Game series --}}
+        @if(!empty($gameSeries))
+        <div class="show-card">
+            <h2 class="show-card-title">Game Series</h2>
+            <div class="store-list">
+                @foreach($gameSeries as $s)
+                <a href="{{ route('games.show', $s['id']) }}" class="store-btn">
+                    <i class="ti ti-device-gamepad-2" aria-hidden="true"></i>
+                    {{ $s['name'] }}
+                </a>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        {{-- Suggested games --}}
+        @if(!empty($suggested))
+        <div class="show-card">
+            <h2 class="show-card-title">You Might Also Like</h2>
+            <div class="suggested-list">
+                @foreach(array_slice($suggested, 0, 5) as $s)
+                <a href="{{ route('games.show', $s['id']) }}" class="suggested-item">
+                    @if(!empty($s['background_image']))
+                        <img src="{{ $s['background_image'] }}" alt="{{ $s['name'] }}" class="suggested-img">
+                    @else
+                        <div class="suggested-img suggested-img-placeholder">
+                            <i class="ti ti-device-gamepad-2"></i>
+                        </div>
+                    @endif
+                    <span class="suggested-name">{{ $s['name'] }}</span>
                 </a>
                 @endforeach
             </div>

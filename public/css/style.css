@@ -1959,3 +1959,179 @@ footer{
     color: var(--accent2);
     font-style: normal;
 }
+
+/* ── Screenshots ────────────────────────────────────── */
+.screenshots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: .6rem;
+}
+.screenshot-item {
+    display: block;
+    border-radius: 8px;
+    overflow: hidden;
+    aspect-ratio: 16/9;
+    border: 1px solid var(--border);
+    transition: border-color .2s;
+}
+.screenshot-item:hover { border-color: var(--accent); }
+.screenshot-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .3s;
+}
+.screenshot-item:hover img { transform: scale(1.05); }
+
+/* ── Characters ─────────────────────────────────────── */
+.characters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+}
+.character-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color .2s;
+    display: flex;
+    flex-direction: column;
+}
+.character-card:hover { border-color: var(--accent); }
+.character-img {
+    width: 100%;
+    aspect-ratio: 3/4;
+    object-fit: cover;
+    display: block;
+}
+.character-img-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg4);
+    color: var(--muted);
+    font-size: 2rem;
+}
+.character-info {
+    padding: .65rem .75rem;
+}
+.character-name {
+    font-size: .82rem;
+    font-weight: 700;
+    color: var(--text);
+    display: block;
+    margin-bottom: .3rem;
+    font-family: 'Syne', sans-serif;
+}
+.character-desc {
+    font-size: .72rem;
+    color: var(--muted);
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ── Achievements ───────────────────────────────────── */
+.achievements-list {
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+}
+.achievement-item {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+    padding: .65rem .75rem;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    transition: border-color .2s;
+}
+.achievement-item:hover { border-color: var(--accent); }
+.achievement-img {
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+.achievement-img-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg4);
+    color: var(--muted);
+    font-size: 1.1rem;
+    border-radius: 8px;
+}
+.achievement-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+.achievement-name {
+    font-size: .83rem;
+    font-weight: 600;
+    color: var(--text);
+}
+.achievement-desc {
+    font-size: .75rem;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.achievement-percent {
+    font-size: .7rem;
+    color: var(--accent2);
+    font-weight: 500;
+}
+
+/* ── Suggested games ────────────────────────────────── */
+.suggested-list {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+}
+.suggested-item {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    text-decoration: none;
+    color: var(--text);
+    padding: .4rem .5rem;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    transition: all .2s;
+}
+.suggested-item:hover {
+    background: var(--bg3);
+    border-color: var(--border);
+}
+.suggested-img {
+    width: 48px;
+    height: 27px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+}
+.suggested-img-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg4);
+    color: var(--muted);
+    font-size: .8rem;
+}
+.suggested-name {
+    font-size: .82rem;
+    font-weight: 500;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
