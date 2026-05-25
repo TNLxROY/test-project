@@ -155,11 +155,25 @@ class GameController extends Controller
         ]);
         $gameSeries = $seriesRes->json()['results'] ?? [];
 
-        // IGDB — search by name for richer data
-        $igdb       = app(\App\Services\IgdbService::class);
-        $igdbGame   = Cache::remember("igdb_game_{$id}", 3600 * 6, function () use ($igdb, $game) {
+        // IGDB
+        $igdb     = app(\App\Services\IgdbService::class);
+        $igdbGame = Cache::remember("igdb_game_{$id}", 3600 * 6, function () use ($igdb, $game) {
             return $igdb->searchGame($game['name']);
         });
+
+        $igdbCoverUrl = null;
+        if (!empty($igdbGame['id'])) {
+            $igdbCoverUrl = Cache::remember("igdb_cover_{$igdbGame['id']}", 3600 * 24, function () use ($igdb, $igdbGame) {
+                return $igdb->getGameCover($igdbGame['id']);
+            });
+        }
+
+        $igdbPlatforms = [];
+        if (!empty($igdbGame['id'])) {
+            $igdbPlatforms = Cache::remember("igdb_platforms_{$igdbGame['id']}", 3600 * 24, function () use ($igdb, $igdbGame) {
+                return $igdb->getGamePlatforms($igdbGame['id']);
+            });
+        }
 
         $igdbCharacters = [];
         if (!empty($igdbGame['id'])) {
@@ -181,7 +195,7 @@ class GameController extends Controller
         return view('games.show', compact(
             'game', 'reviews', 'userReview',
             'screenshots', 'achievements', 'suggested', 'gameSeries',
-            'igdbGame', 'igdbCharacters'
+            'igdbGame', 'igdbCharacters', 'igdbCoverUrl', 'igdbPlatforms'
         ));
     }
 }

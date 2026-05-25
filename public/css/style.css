@@ -805,8 +805,18 @@ footer{
 }
 
 /* Cover image */
-.show-cover-card { padding: 0; overflow: hidden; }
-.show-cover-img { width: 100%; display: block; border-radius: 16px; }
+.show-cover-card {
+    padding: 0;
+    overflow: hidden;
+    border-radius: 16px;
+}
+
+.show-cover-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 16px;
+}
 
 /* Detail list */
 .detail-list { display: flex; flex-direction: column; gap: 0; }
@@ -897,16 +907,75 @@ footer{
     border-radius: 6px;
 }
 
-/* Platforms */
-.platform-grid { display: flex; flex-direction: column; gap: 0.75rem; }
-.platform-item {
-    padding: 0.75rem 1rem;
-    background: var(--bg3);
-    border-radius: 10px;
-    border: 1px solid var(--border);
+/* ── Platform items ───────────────────────────── */
+
+.platform-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 }
-.platform-name { font-size: 0.88rem; font-weight: 600; display: block; }
-.platform-date { font-size: 0.75rem; color: var(--muted); display: block; margin-top: 2px; }
+
+.platform-item {
+    padding: 0.85rem 1rem;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: border-color .2s ease;
+}
+
+.platform-item:hover {
+    border-color: var(--accent);
+}
+
+.platform-item-header {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.platform-icon-wrap {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #7b9cff;
+}
+
+.platform-icon-wrap svg {
+    width: 26px;
+    height: 26px;
+    display: block;
+}
+
+/* Fallback icons */
+.platform-icon-wrap i {
+    font-size: 28px;
+    line-height: 1;
+}
+
+/* Platform text */
+.platform-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.platform-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.platform-date {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 2px;
+}
+
 .sysreq { margin-top: 0.6rem; border-top: 1px solid var(--border); padding-top: 0.6rem; }
 .sysreq-label {
     font-size: 0.68rem;

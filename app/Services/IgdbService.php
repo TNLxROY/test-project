@@ -49,22 +49,20 @@ class IgdbService
         $results = $this->request('games', "
             search \"{$name}\";
             fields id, name, summary, storyline,
-                   cover.url,
-                   artworks.url,
-                   screenshots.url,
-                   videos.video_id,
-                   characters.name, characters.description, characters.mug_shot.url, characters.gender, characters.species,
-                   involved_companies.company.name, involved_companies.developer, involved_companies.publisher,
-                   genres.name,
-                   themes.name,
-                   game_modes.name,
-                   player_perspectives.name,
-                   age_ratings.category, age_ratings.rating,
-                   websites.category, websites.url,
-                   similar_games.name, similar_games.cover.url, similar_games.id,
-                   first_release_date,
-                   total_rating, total_rating_count,
-                   franchise.name, franchises.name;
+                cover.url,
+                release_dates.platform.name, release_dates.human,
+                artworks.url,
+                involved_companies.company.name, involved_companies.developer, involved_companies.publisher,
+                genres.name,
+                themes.name,
+                game_modes.name,
+                player_perspectives.name,
+                age_ratings.category, age_ratings.rating,
+                websites.category, websites.url,
+                similar_games.name, similar_games.cover.url, similar_games.id,
+                first_release_date,
+                total_rating, total_rating_count,
+                franchise.name, franchises.name;
             limit 1;
         ");
 
@@ -80,5 +78,47 @@ class IgdbService
         ");
 
         return $results ?? [];
+    }
+
+    public function getGameCover(int $igdbId): ?string
+    {
+        $results = $this->request('covers', "
+            fields url, width, height, image_id;
+            where game = {$igdbId};
+            limit 1;
+        ");
+
+        if (!empty($results[0]['image_id'])) {
+            // construct URL directly from image_id to guarantee correct endpoint
+            return 'https://images.igdb.com/igdb/image/upload/t_cover_big/' . $results[0]['image_id'] . '.jpg';
+        }
+
+        return null;
+    }
+
+    public function getPlatformLogos(array $igdbPlatformIds): array
+    {
+        if (empty($igdbPlatformIds)) return [];
+
+        $ids = implode(',', $igdbPlatformIds);
+
+        $results = $this->request('platform_logos', "
+            fields alpha_channel, animated, checksum, height, image_id, trusted, url, width;
+            where id = ({$ids});
+            limit 50;
+        ");
+
+        return $results ?? [];
+    }
+
+    public function getGamePlatforms(int $igdbId): array
+    {
+        $results = $this->request('games', "
+            fields platforms.name, platforms.platform_logo.id, platforms.platform_logo.image_id, platforms.slug;
+            where id = {$igdbId};
+            limit 1;
+        ");
+
+        return $results[0]['platforms'] ?? [];
     }
 }
