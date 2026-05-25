@@ -90,7 +90,7 @@ class IgdbService
 
         if (!empty($results[0]['image_id'])) {
             // construct URL directly from image_id to guarantee correct endpoint
-            return 'https://images.igdb.com/igdb/image/upload/t_cover_big/' . $results[0]['image_id'] . '.jpg';
+            return 'https://images.igdb.com/igdb/image/upload/t_1080p/' . $results[0]['image_id'] . '.jpg';
         }
 
         return null;

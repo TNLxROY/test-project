@@ -277,7 +277,24 @@
 
         {{-- Cover image — IGDB first, fallback to RAWG --}}
         @php
+
+            // Prefer IGDB cover first
             $coverUrl = $igdbCoverUrl ?? $game['background_image'] ?? null;
+
+            // RAWG image quality fix
+            if ($coverUrl && str_contains($coverUrl, 'media.rawg.io')) {
+
+                // Remove RAWG crop/compression segment
+                $coverUrl = preg_replace(
+                    '#/crop/\d+/\d+/#',
+                    '/',
+                    $coverUrl
+                );
+
+                // Optional: remove additional resize filters
+                $coverUrl = str_replace('/resize/', '/', $coverUrl);
+            }
+
         @endphp
         @if($coverUrl)
         <div class="show-card show-cover-card">

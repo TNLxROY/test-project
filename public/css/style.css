@@ -814,8 +814,10 @@ footer{
 .show-cover-img {
     width: 100%;
     height: auto;
+    object-fit: cover;
+    image-rendering: auto;
+    border-radius: 14px;
     display: block;
-    border-radius: 16px;
 }
 
 /* Detail list */
