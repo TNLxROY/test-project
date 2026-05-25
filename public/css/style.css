@@ -814,10 +814,8 @@ footer{
 .show-cover-img {
     width: 100%;
     height: auto;
-    object-fit: cover;
-    image-rendering: auto;
-    border-radius: 14px;
     display: block;
+    border-radius: 16px;
 }
 
 /* Detail list */
@@ -935,28 +933,26 @@ footer{
     gap: 0.85rem;
 }
 
-.platform-icon-wrap {
+.platform-logo-wrap {
     width: 42px;
     height: 42px;
     min-width: 42px;
-    min-height: 42px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    color: #7b9cff;
 }
 
-.platform-icon-wrap svg {
-    width: 26px;
-    height: 26px;
+.platform-logo-wrap svg {
+    width: 100%;
+    height: auto;
     display: block;
 }
 
-/* Fallback icons */
-.platform-icon-wrap i {
-    font-size: 28px;
-    line-height: 1;
+.platform-date--unknown {
+    font-style: italic;
+    opacity: .4;
+    font-size: .72rem;
 }
 
 /* Platform text */
@@ -979,6 +975,26 @@ footer{
 }
 
 .sysreq { margin-top: 0.6rem; border-top: 1px solid var(--border); padding-top: 0.6rem; }
+.sysreq--collapsed { display: none; }
+
+.sysreq-toggle {
+    margin-left: auto;
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg4);
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color .2s, color .2s;
+}
+.sysreq-toggle:hover { border-color: var(--accent); color: var(--text); }
+.sysreq-toggle .ti { font-size: 14px; transition: transform .25s ease; }
+.sysreq-toggle.open .ti { transform: rotate(180deg); }
 .sysreq-label {
     font-size: 0.68rem;
     text-transform: uppercase;

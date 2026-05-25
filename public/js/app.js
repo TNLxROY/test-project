@@ -404,3 +404,26 @@ document.addEventListener('DOMContentLoaded', () => {
         el.innerHTML = styledUsername(el.innerText.trim());
     });
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    const platformButtons = document.querySelectorAll(
+        '.platform-expand-btn'
+    );
+
+    platformButtons.forEach(button => {
+
+        button.addEventListener('click', (e) => {
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            const platformItem =
+                button.closest('.platform-item');
+
+            platformItem.classList.toggle('active');
+        });
+
+    });
+
+});
