@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ReviewCreated;
 use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,6 +33,8 @@ class ReviewController extends Controller
             'game_name' => $request->input('game_name'),
             'body'      => $data['body'],
         ]);
+
+        ReviewCreated::dispatch(Auth::user());
 
         $review->load('user');
 

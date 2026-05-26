@@ -9,12 +9,19 @@ use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
+use App\Services\XpService;
 
 class ProfileController extends Controller
 {
-    public function show()
+    public function show(XpService $xpService)
     {
-        return view('profile', ['user' => Auth::user()]);
+        $user      = Auth::user();
+        $userLevel = $xpService->getOrCreate($user);
+
+        return view('profile', [
+            'user' => Auth::user(),
+            'userLevel' => $userLevel
+        ]);
     }
 
     public function updateName(Request $request)

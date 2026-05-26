@@ -2,6 +2,8 @@
 
 @section('content')
 
+@include('partials.xp-level-card')
+
 <div class="profile-hero">
     <div class="profile-hero-inner">
 

@@ -2222,3 +2222,142 @@ footer{
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
+
+/* ── XP Level Card ──────────────────────────────────────────────────────────
+   Add these styles to your main stylesheet (e.g. app.css or profile.css).
+   The card uses the same .show-card base class as the rest of your profile page.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Header: badge + rank text */
+.xp-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1rem;
+}
+
+/* Level badge circle */
+.xp-badge {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #EEEDFE;                /* purple-50 */
+    border: 2px solid #7F77DD;         /* purple-400 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.xp-badge-num {
+    font-size: 20px;
+    font-weight: 600;
+    color: #3C3489;                    /* purple-800 */
+    line-height: 1;
+}
+
+.xp-badge-label {
+    font-size: 9px;
+    font-weight: 500;
+    color: #534AB7;                    /* purple-600 */
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* Rank text */
+.xp-rank-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--color-text-primary, #1a1a1a);
+    margin: 0;
+}
+
+.xp-rank-sub {
+    font-size: 12px;
+    color: var(--color-text-secondary, #666);
+    margin: 2px 0 0;
+}
+
+/* XP bar */
+.xp-bar-wrap {
+    margin-bottom: 0.75rem;
+}
+
+.xp-bar-track {
+    height: 8px;
+    background: var(--color-background-secondary, #f3f3f3);
+    border-radius: 4px;
+    overflow: hidden;
+    border: 0.5px solid var(--color-border-tertiary, rgba(0,0,0,0.1));
+}
+
+.xp-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: #7F77DD;               /* purple-400 */
+    transition: width 0.5s ease;
+}
+
+.xp-bar-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--color-text-secondary, #666);
+    margin-top: 4px;
+}
+
+/* Stats row */
+.xp-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 0.75rem;
+}
+
+.xp-stat {
+    background: var(--color-background-secondary, #f8f8f8);
+    border-radius: var(--border-radius-md, 8px);
+    padding: 0.6rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.xp-stat-val {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--color-text-primary, #1a1a1a);
+    line-height: 1;
+}
+
+.xp-stat-label {
+    font-size: 11px;
+    color: var(--color-text-secondary, #666);
+    margin-top: 3px;
+}
+
+/* Next level hint */
+.xp-next-hint {
+    font-size: 12px;
+    color: var(--color-text-secondary, #666);
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 0.5px solid var(--color-border-tertiary, rgba(0,0,0,0.1));
+}
+
+.xp-next-hint .ti {
+    color: #7F77DD;
+    vertical-align: -2px;
+    font-size: 14px;
+}
+
+/* Dark mode overrides */
+@media (prefers-color-scheme: dark) {
+    .xp-badge {
+        background: #3C3489;           /* purple-800 */
+        border-color: #7F77DD;
+    }
+
+    .xp-badge-num  { color: #CECBF6; } /* purple-100 */
+    .xp-badge-label{ color: #AFA9EC; } /* purple-200 */
+}
