@@ -8,63 +8,101 @@
     <div class="player-hero-content">
         <a href="{{ route('users.index') }}" class="back-link">← Back to Players</a>
         <div class="player-hero-profile">
-            <div class="player-hero-avatar-wrap">
-                @if($avatarUrl)
-                    <img src="{{ $avatarUrl }}" alt="{{ $user->name }}" class="player-hero-avatar-img">
-                @else
-                    <div class="player-hero-avatar-initials">
-                        {{ strtoupper(substr($user->name, 0, 1)) }}
-                    </div>
-                @endif
-            </div>
-            <div>
-                <h1 class="player-hero-name">{{ $user->name }}</h1>
-                <p class="player-hero-since">Member since {{ $user->created_at->format('F Y') }}</p>
-                <div class="player-hero-stats">
-                    {{-- after .player-hero-stats div --}}
-                    @auth
-                        @if(auth()->id() !== $user->id)
-                            <div class="friend-btn-wrap" id="friend-btn-wrap">
-                                @php
-                                    $status = $friendship?->status;
-                                    $isSender = $friendship?->sender_id === auth()->id();
-                                @endphp
-
-                                @if(!$friendship)
-                                    <button class="btn btn-primary btn-sm friend-btn" onclick="sendFriendRequest({{ $user->id }})">
-                                        <i class="ti ti-user-plus"></i> Add Friend
-                                    </button>
-
-                                @elseif($status === 'pending' && $isSender)
-                                    <button class="btn btn-ghost btn-sm friend-btn" disabled>
-                                        <i class="ti ti-clock"></i> Request Sent
-                                    </button>
-
-                                @elseif($status === 'pending' && !$isSender)
-                                    <button class="btn btn-primary btn-sm friend-btn" onclick="acceptRequest({{ $user->id }})">
-                                        <i class="ti ti-check"></i> Accept Request
-                                    </button>
-                                    <button class="btn btn-ghost btn-sm friend-btn" onclick="declineRequest({{ $user->id }})">
-                                        <i class="ti ti-x"></i> Decline
-                                    </button>
-
-                                @elseif($status === 'accepted')
-                                    <button class="btn btn-ghost btn-sm friend-btn friend-btn-remove" onclick="removeFriend({{ $user->id }})">
-                                        <i class="ti ti-user-minus"></i> Remove Friend
-                                    </button>
-
-                                @elseif($status === 'declined')
-                                    <button class="btn btn-primary btn-sm friend-btn" onclick="sendFriendRequest({{ $user->id }})">
-                                        <i class="ti ti-user-plus"></i> Add Friend
-                                    </button>
-                                @endif
-                            </div>
+            {{-- Left: avatar + name + stats --}}
+            <div class="player-hero-identity">
+                <div class="player-hero-avatar-wrap">
+                    @if($avatarUrl)
+                        <img src="{{ $avatarUrl }}" alt="{{ $user->name }}" class="player-hero-avatar-img">
+                    @else
+                        <div class="player-hero-avatar-initials">
+                            {{ strtoupper(substr($user->name, 0, 1)) }}
                         </div>
                     @endif
-                    @endauth
-                    <div class="player-stat">
-                        <span class="player-stat-num">{{ count($reviews) }}</span>
-                        <span class="player-stat-label">Reviews</span>
+                </div>
+                <div>
+                    <h1 class="player-hero-name">{{ $user->name }}</h1>
+                    <p class="player-hero-since">Member since {{ $user->created_at->format('F Y') }}</p>
+                    <div class="player-hero-stats">
+                        @auth
+                            @if(auth()->id() !== $user->id)
+                                <div class="friend-btn-wrap" id="friend-btn-wrap">
+                                    @php
+                                        $status = $friendship?->status;
+                                        $isSender = $friendship?->sender_id === auth()->id();
+                                    @endphp
+
+                                    @if(!$friendship)
+                                        <button class="btn btn-primary btn-sm friend-btn" onclick="sendFriendRequest({{ $user->id }})">
+                                            <i class="ti ti-user-plus"></i> Add Friend
+                                        </button>
+
+                                    @elseif($status === 'pending' && $isSender)
+                                        <button class="btn btn-ghost btn-sm friend-btn" disabled>
+                                            <i class="ti ti-clock"></i> Request Sent
+                                        </button>
+
+                                    @elseif($status === 'pending' && !$isSender)
+                                        <button class="btn btn-primary btn-sm friend-btn" onclick="acceptRequest({{ $user->id }})">
+                                            <i class="ti ti-check"></i> Accept Request
+                                        </button>
+                                        <button class="btn btn-ghost btn-sm friend-btn" onclick="declineRequest({{ $user->id }})">
+                                            <i class="ti ti-x"></i> Decline
+                                        </button>
+
+                                    @elseif($status === 'accepted')
+                                        <button class="btn btn-ghost btn-sm friend-btn friend-btn-remove" onclick="removeFriend({{ $user->id }})">
+                                            <i class="ti ti-user-minus"></i> Remove Friend
+                                        </button>
+
+                                    @elseif($status === 'declined')
+                                        <button class="btn btn-primary btn-sm friend-btn" onclick="sendFriendRequest({{ $user->id }})">
+                                            <i class="ti ti-user-plus"></i> Add Friend
+                                        </button>
+                                    @endif
+                                </div>
+                            @endif
+                        @endauth
+                        <div class="player-stat">
+                            <span class="player-stat-num">{{ count($reviews) }}</span>
+                            <span class="player-stat-label">Reviews</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Right: XP panel --}}
+            <div class="profile-xp-panel">
+                <div class="profile-xp-top">
+                    <div class="profile-xp-badge">
+                        <span class="profile-xp-num">{{ $userLevel->level }}</span>
+                        <span class="profile-xp-lvl">LVL</span>
+                    </div>
+                    <div class="profile-xp-top-right">
+                        <span class="profile-xp-sub">{{ $userLevel->xp }} / {{ $userLevel->xpForCurrentLevel() }} XP &mdash; {{ $userLevel->progressPercent() }}%</span>
+                        <div class="profile-xp-bar-track" role="progressbar"
+                             aria-valuenow="{{ $userLevel->xp }}"
+                             aria-valuemin="0"
+                             aria-valuemax="{{ $userLevel->xpForCurrentLevel() }}">
+                            <div class="profile-xp-bar-fill" style="width: 0%" data-xp-target="{{ $userLevel->progressPercent() }}"></div>
+                        </div>
+                        <span class="profile-xp-hint">{{ $userLevel->xpToNextLevel() }} xp needed to level up</span>
+                    </div>
+                </div>
+
+                <div class="profile-xp-stats">
+                    <div class="profile-xp-stat">
+                        <i class="ti ti-file-text" aria-hidden="true"></i>
+                        <div class="profile-xp-stat-text">
+                            <span class="profile-xp-stat-val">{{ $userLevel->review_count }}</span>
+                            <span class="profile-xp-stat-label">Reviews</span>
+                        </div>
+                    </div>
+                    <div class="profile-xp-stat">
+                        <i class="ti ti-star" aria-hidden="true"></i>
+                        <div class="profile-xp-stat-text">
+                            <span class="profile-xp-stat-val">{{ number_format($userLevel->total_xp) }}</span>
+                            <span class="profile-xp-stat-label">Total XP</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -99,8 +137,33 @@
     @endif
 </div>
 
+<style>
+.player-hero-profile {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+.player-hero-identity {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-shrink: 0;
+}
+@media (max-width: 700px) {
+    .player-hero-profile { flex-direction: column; align-items: flex-start; }
+    .profile-xp-panel    { max-width: 100%; width: 100%; }
+}
+</style>
+
 <script>
-const friendCsrf = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+// XP bar charge-up
+setTimeout(() => {
+    const bar = document.querySelector('.profile-xp-bar-fill');
+    if (bar) bar.style.width = bar.dataset.xpTarget + '%';
+}, 800);
+
 
 async function friendFetch(url, method) {
     const res  = await fetch(url, {

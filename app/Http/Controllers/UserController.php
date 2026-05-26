@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Services\XpService;
 
 class UserController extends Controller
 {
@@ -22,7 +23,7 @@ class UserController extends Controller
         return view('users.index', compact('users', 'query'));
     }
 
-    public function show(User $user)
+    public function show(User $user, XpService $xpService)
     {
         $reviews = Review::where('user_id', $user->id)
             ->latest()
@@ -36,6 +37,8 @@ class UserController extends Controller
             ? auth()->user()->friendshipWith($user)
             : null;
 
-        return view('users.show', compact('user', 'reviews', 'avatarUrl', 'friendship'));
+        $userLevel = $xpService->getOrCreate($user);
+
+        return view('users.show', compact('user', 'reviews', 'avatarUrl', 'friendship', 'userLevel'));
     }
 }
