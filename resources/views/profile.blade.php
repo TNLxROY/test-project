@@ -2,35 +2,74 @@
 
 @section('content')
 
-@include('partials.xp-level-card')
-
 <div class="profile-hero">
     <div class="profile-hero-inner">
 
-        {{-- Avatar --}}
-        <div class="profile-avatar-wrap" id="avatar-wrap">
-            @if($user->avatar)
-                <img src="{{ Storage::url($user->avatar) }}" alt="Avatar" class="profile-avatar-img" id="avatar-img">
-            @else
-                <div class="profile-avatar-lg" id="avatar-initials">
-                    {{ strtoupper(substr($user->name, 0, 1)) }}{{ strtoupper(substr(strstr($user->name.' ', ' '), 1, 1)) }}
-                </div>
-            @endif
-            <button class="avatar-edit-btn" id="avatar-edit-btn" title="Change profile picture">
-                <i class="ti ti-camera" aria-hidden="true"></i>
-            </button>
+        {{-- Left: Avatar + name --}}
+        <div class="profile-hero-identity">
+            <div class="profile-avatar-wrap" id="avatar-wrap">
+                @if($user->avatar)
+                    <img src="{{ Storage::url($user->avatar) }}" alt="Avatar" class="profile-avatar-img" id="avatar-img">
+                @else
+                    <div class="profile-avatar-lg" id="avatar-initials">
+                        {{ strtoupper(substr($user->name, 0, 1)) }}{{ strtoupper(substr(strstr($user->name.' ', ' '), 1, 1)) }}
+                    </div>
+                @endif
+                <button class="avatar-edit-btn" id="avatar-edit-btn" title="Change profile picture">
+                    <i class="ti ti-camera" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <div>
+                <h1 class="profile-name" id="profile-display-name">{{ $user->name }}</h1>
+                <p class="profile-email">{{ $user->email }}</p>
+                <p class="profile-joined">Member since {{ $user->created_at->format('F Y') }}</p>
+                @if($user->avatar)
+                    <button id="remove-avatar-btn" class="btn btn-ghost btn-sm" style="margin-top:.5rem;font-size:.75rem" onclick="removeAvatar()">
+                        Remove photo
+                    </button>
+                @endif
+            </div>
         </div>
 
-        <div>
-            <h1 class="profile-name" id="profile-display-name">{{ $user->name }}</h1>
-            <p class="profile-email">{{ $user->email }}</p>
-            <p class="profile-joined">Member since {{ $user->created_at->format('F Y') }}</p>
-            @if($user->avatar)
-                <button id="remove-avatar-btn" class="btn btn-ghost btn-sm" style="margin-top:.5rem;font-size:.75rem" onclick="removeAvatar()">
-                    Remove photo
-                </button>
-            @endif
+        {{-- Right: XP level panel --}}
+        <div class="profile-xp-panel">
+            <div class="profile-xp-top">
+                <div class="profile-xp-badge">
+                    <span class="profile-xp-num">{{ $userLevel->level }}</span>
+                    <span class="profile-xp-lvl">LVL</span>
+                </div>
+                <div class="profile-xp-top-right">
+                    <span class="profile-xp-sub">{{ $userLevel->xp }} / {{ $userLevel->xpForCurrentLevel() }} XP &mdash; {{ $userLevel->progressPercent() }}%</span>
+                    <div class="profile-xp-bar-track" role="progressbar"
+                         aria-valuenow="{{ $userLevel->xp }}"
+                         aria-valuemin="0"
+                         aria-valuemax="{{ $userLevel->xpForCurrentLevel() }}">
+                        <div class="profile-xp-bar-fill" style="width: 0%" data-xp-target="{{ $userLevel->progressPercent() }}"></div>
+                    </div>
+                    <span class="profile-xp-hint">{{ $userLevel->xpToNextLevel() }} xp needed to level up</span>
+                </div>
+            </div>
+
+            <div class="profile-xp-stats">
+                <div class="profile-xp-stat">
+                    <i class="ti ti-file-text" aria-hidden="true"></i>
+                    <div class="profile-xp-stat-text">
+                        <span class="profile-xp-stat-val">{{ $userLevel->review_count }}</span>
+                        <span class="profile-xp-stat-label">Reviews</span>
+                    </div>
+                </div>
+                <div class="profile-xp-stat">
+                    <i class="ti ti-star" aria-hidden="true"></i>
+                    <div class="profile-xp-stat-text">
+                        <span class="profile-xp-stat-val">{{ number_format($userLevel->total_xp) }}</span>
+                        <span class="profile-xp-stat-label">Total XP</span>
+                    </div>
+                </div>
+
+            </div>
         </div>
+
     </div>
 </div>
 
@@ -158,7 +197,13 @@
 <div class="notification" id="profile-notif"></div>
 
 <script>
-// ── Profile utilities ────────────────────────────────
+// ── XP bar charge-up (matches shine delay) ──────────────────────────────
+setTimeout(() => {
+    const bar = document.querySelector('.profile-xp-bar-fill');
+    if (bar) bar.style.width = bar.dataset.xpTarget + '%';
+}, 800);
+
+
 function profileFetch(url, method, body) {
     return fetch(url, {
         method,

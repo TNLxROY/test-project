@@ -1089,7 +1089,15 @@ footer{
     margin: 0 auto;
     display: flex;
     align-items: center;
-    gap: 1.75rem;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+.profile-hero-identity {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-shrink: 0;
 }
 .profile-avatar-lg {
     width: 80px;
@@ -2223,141 +2231,174 @@ footer{
     overflow: hidden;
 }
 
-/* ── XP Level Card ──────────────────────────────────────────────────────────
-   Add these styles to your main stylesheet (e.g. app.css or profile.css).
-   The card uses the same .show-card base class as the rest of your profile page.
-   ─────────────────────────────────────────────────────────────────────────── */
 
-/* Header: badge + rank text */
-.xp-header {
+/* ── XP panel (right side of hero) ─────────────────────────────────────── */
+.profile-xp-panel {
+    flex: 1;
+    min-width: 260px;
+    max-width: 420px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: .65rem;
+}
+
+/* Badge + XP row */
+.profile-xp-top {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 1rem;
 }
 
-/* Level badge circle */
-.xp-badge {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background: #EEEDFE;                /* purple-50 */
-    border: 2px solid #7F77DD;         /* purple-400 */
+/* Square badge with red accent line at the bottom */
+.profile-xp-badge {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: var(--bg4);
+    border: 1px solid var(--border);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    overflow: hidden;
 }
 
-.xp-badge-num {
+.profile-xp-badge::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -75%;
+    width: 50%;
+    height: 200%;
+    background: linear-gradient(
+        120deg,
+        transparent 0%,
+        rgba(255,255,255,0.25) 50%,
+        transparent 100%
+    );
+    transform: skewX(-15deg);
+    animation: xp-shine 0.6s ease forwards;
+    animation-delay: 0.8s;
+    opacity: 0;
+}
+
+@keyframes xp-shine {
+    0%   { left: -75%; opacity: 1; }
+    100% { left: 130%; opacity: 1; }
+}
+
+.profile-xp-badge::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--accent);
+}
+
+.profile-xp-num {
+    font-family: 'Syne', sans-serif;
     font-size: 20px;
-    font-weight: 600;
-    color: #3C3489;                    /* purple-800 */
+    font-weight: 700;
+    color: var(--text);
     line-height: 1;
 }
 
-.xp-badge-label {
-    font-size: 9px;
-    font-weight: 500;
-    color: #534AB7;                    /* purple-600 */
-    letter-spacing: 0.08em;
+.profile-xp-lvl {
+    font-size: 8px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: .1em;
     text-transform: uppercase;
 }
 
-/* Rank text */
-.xp-rank-title {
-    font-size: 15px;
+/* Right side of top row: XP text + bar stacked */
+.profile-xp-top-right {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+}
+
+.profile-xp-sub {
+    font-size: 13px;
     font-weight: 500;
-    color: var(--color-text-primary, #1a1a1a);
+    color: var(--text);
     margin: 0;
 }
 
-.xp-rank-sub {
-    font-size: 12px;
-    color: var(--color-text-secondary, #666);
-    margin: 2px 0 0;
+.profile-xp-hint {
+    font-size: 11px;
+    color: var(--muted);
 }
 
 /* XP bar */
-.xp-bar-wrap {
-    margin-bottom: 0.75rem;
-}
-
-.xp-bar-track {
-    height: 8px;
-    background: var(--color-background-secondary, #f3f3f3);
-    border-radius: 4px;
+.profile-xp-bar-track {
+    height: 4px;
+    background: var(--bg4);
+    border-radius: 2px;
     overflow: hidden;
-    border: 0.5px solid var(--color-border-tertiary, rgba(0,0,0,0.1));
+    border: 1px solid var(--border);
 }
 
-.xp-bar-fill {
+.profile-xp-bar-fill {
     height: 100%;
-    border-radius: 4px;
-    background: #7F77DD;               /* purple-400 */
-    transition: width 0.5s ease;
-}
-
-.xp-bar-meta {
-    display: flex;
-    justify-content: space-between;
-    font-size: 11px;
-    color: var(--color-text-secondary, #666);
-    margin-top: 4px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Stats row */
-.xp-stats-grid {
+.profile-xp-stats {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-top: 0.75rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
 }
 
-.xp-stat {
-    background: var(--color-background-secondary, #f8f8f8);
-    border-radius: var(--border-radius-md, 8px);
-    padding: 0.6rem 0.75rem;
+.profile-xp-stat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: .45rem .65rem;
+}
+
+.profile-xp-stat i {
+    font-size: 15px;
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+.profile-xp-stat-text {
     display: flex;
     flex-direction: column;
+    gap: 1px;
 }
 
-.xp-stat-val {
-    font-size: 20px;
-    font-weight: 500;
-    color: var(--color-text-primary, #1a1a1a);
+.profile-xp-stat-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
     line-height: 1;
 }
 
-.xp-stat-label {
-    font-size: 11px;
-    color: var(--color-text-secondary, #666);
-    margin-top: 3px;
+.profile-xp-stat-label {
+    font-size: 10px;
+    color: var(--muted);
 }
 
-/* Next level hint */
-.xp-next-hint {
-    font-size: 12px;
-    color: var(--color-text-secondary, #666);
-    margin-top: 0.75rem;
-    padding-top: 0.75rem;
-    border-top: 0.5px solid var(--color-border-tertiary, rgba(0,0,0,0.1));
-}
-
-.xp-next-hint .ti {
-    color: #7F77DD;
-    vertical-align: -2px;
-    font-size: 14px;
-}
-
-/* Dark mode overrides */
-@media (prefers-color-scheme: dark) {
-    .xp-badge {
-        background: #3C3489;           /* purple-800 */
-        border-color: #7F77DD;
-    }
-
-    .xp-badge-num  { color: #CECBF6; } /* purple-100 */
-    .xp-badge-label{ color: #AFA9EC; } /* purple-200 */
+/* Responsive: stack on small screens */
+@media (max-width: 700px) {
+    .profile-hero-inner  { flex-direction: column; align-items: flex-start; }
+    .profile-xp-panel    { max-width: 100%; width: 100%; }
 }
