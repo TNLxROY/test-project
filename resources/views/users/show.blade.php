@@ -6,7 +6,6 @@
 <div class="player-hero">
     <div class="player-hero-fade"></div>
     <div class="player-hero-content">
-        <a href="{{ route('users.index') }}" class="back-link">← Back to Players</a>
         <div class="player-hero-profile">
             {{-- Left: avatar + name + stats --}}
             <div class="player-hero-identity">
@@ -70,8 +69,14 @@
                 </div>
             </div>
 
-            {{-- Right: XP panel --}}
-            <div class="profile-xp-panel">
+            {{-- Right: back link + XP panel --}}
+            <div class="hero-right">
+                <a href="{{ route('users.index') }}" class="back-link">
+                    <i class="ti ti-arrow-left" aria-hidden="true"></i> Back to Users
+                </a>
+
+                {{-- XP panel --}}
+                <div class="profile-xp-panel">
                 <div class="profile-xp-top">
                     <div class="profile-xp-badge">
                         <span class="profile-xp-num">{{ $userLevel->level }}</span>
@@ -105,7 +110,8 @@
                         </div>
                     </div>
                 </div>
-            </div>
+                </div>{{-- /.profile-xp-panel --}}
+            </div>{{-- /.hero-right --}}
         </div>
     </div>
 </div>
@@ -136,26 +142,6 @@
         @endforeach
     @endif
 </div>
-
-<style>
-.player-hero-profile {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 2rem;
-    flex-wrap: wrap;
-}
-.player-hero-identity {
-    display: flex;
-    align-items: center;
-    gap: 1.25rem;
-    flex-shrink: 0;
-}
-@media (max-width: 700px) {
-    .player-hero-profile { flex-direction: column; align-items: flex-start; }
-    .profile-xp-panel    { max-width: 100%; width: 100%; }
-}
-</style>
 
 <script>
 // XP bar charge-up

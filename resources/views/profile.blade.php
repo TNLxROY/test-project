@@ -32,8 +32,12 @@
             </div>
         </div>
 
-        {{-- Right: XP level panel --}}
-        <div class="profile-xp-panel">
+        {{-- Right: home link + XP level panel --}}
+        <div class="hero-right">
+            <a href="{{ route('home') }}" class="back-link">
+                <i class="ti ti-home" aria-hidden="true"></i> Home
+            </a>
+            <div class="profile-xp-panel">
             <div class="profile-xp-top">
                 <div class="profile-xp-badge">
                     <span class="profile-xp-num">{{ $userLevel->level }}</span>
@@ -68,7 +72,8 @@
                 </div>
 
             </div>
-        </div>
+        </div>{{-- /.profile-xp-panel --}}
+        </div>{{-- /.hero-right --}}
 
     </div>
 </div>
