@@ -1869,7 +1869,7 @@ footer{
 .player-hero-identity {
     display: flex;
     align-items: center;
-    gap: 2.5rem;
+    gap: 1.5rem;
     flex-shrink: 0;
 }
 .player-hero-avatar-wrap { flex-shrink: 0; }
