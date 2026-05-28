@@ -4,8 +4,8 @@
 
 <div class="users-hero">
     <div class="users-hero-inner">
-        <h1 class="users-hero-title">Players</h1>
-        <p class="users-hero-sub">Search for other players and view their reviews.</p>
+        <h1 class="users-hero-title">Users</h1>
+        <p class="users-hero-sub">Search for other users on the platform.</p>
         <form action="{{ route('users.index') }}" method="GET" class="users-search-form">
             <input
                 type="text"
