@@ -2359,7 +2359,6 @@ footer{
     text-transform: uppercase;
 }
 
-/* Right side of top row: XP text + bar stacked */
 .profile-xp-top-right {
     display: flex;
     flex-direction: column;
