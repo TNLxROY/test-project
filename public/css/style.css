@@ -2015,7 +2015,7 @@ footer{
 .nav-right {
     display: flex;
     align-items: center;
-    gap: .75rem;
+    gap: .60rem;
     flex-shrink: 0;       /* never let the chip shrink */
 }
 
@@ -2535,4 +2535,56 @@ footer{
     color: #4ade80;
     font-size: 1.2rem;
     flex-shrink: 0;
+}
+
+.nav-profile-xp-badge {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.nav-profile-xp-badge::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -75%;
+    width: 50%;
+    height: 200%;
+    background: linear-gradient(
+        120deg,
+        transparent 0%,
+        rgba(255,255,255,0.25) 50%,
+        transparent 100%
+    );
+    transform: skewX(-15deg);
+    opacity: 0;
+}
+
+.nav-profile-xp-badge::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--accent);
+}
+
+.nav-profile-xp-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+    top: -2px;
+    position: relative;
 }

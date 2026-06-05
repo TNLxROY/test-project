@@ -14,6 +14,12 @@
             <span></span>
             <span></span>
         </button>
+        @auth
+            @php $navLevel = app(\App\Services\XpService::class)->getOrCreate(auth()->user()); @endphp
+            <div class="nav-profile-xp-badge">
+                <span class="nav-profile-xp-num">{{ $navLevel->level }}</span>
+            </div>
+        @endauth
         <div id="mini-profile-container"></div>
     </div>
     <div class="user-dropdown" id="user-dropdown">
