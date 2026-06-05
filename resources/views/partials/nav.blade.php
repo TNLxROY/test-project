@@ -27,6 +27,9 @@
         <a href="{{ route('friends.index') }}" class="dropdown-item">
             <i class="ti ti-users" aria-hidden="true"></i> Friends
         </a>
+        <a href="{{ route('achievements.index') }}" class="dropdown-item">
+            <i class="ti ti-trophy" aria-hidden="true"></i> Achievements
+        </a>
         <a href="{{ route('games.index') }}" class="dropdown-item">
             <i class="ti ti-device-gamepad-2" aria-hidden="true"></i> Browse Games
         </a>

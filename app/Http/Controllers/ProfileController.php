@@ -107,6 +107,8 @@ class ProfileController extends Controller
 
         $user->update(['avatar' => $filename]);
 
+        app(\App\Services\AchievementService::class)->checkAndAward(Auth::user());
+
         return response()->json([
             'message'    => 'Avatar updated.',
             'avatar_url' => Storage::url($filename) . '?v=' . time(),

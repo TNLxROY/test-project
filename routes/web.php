@@ -70,3 +70,5 @@ Route::middleware('auth')->group(function () {
     Route::post('/users/{user}/friend/decline',     [App\Http\Controllers\FriendshipController::class, 'decline'])->name('friends.decline');
     Route::delete('/users/{user}/friend',           [App\Http\Controllers\FriendshipController::class, 'remove'])->name('friends.remove');
 });
+
+Route::get('/achievements', [App\Http\Controllers\AchievementController::class, 'index'])->name('achievements.index');

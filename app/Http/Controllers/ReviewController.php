@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\ReviewCreated;
 use App\Models\Review;
+use App\Services\AchievementService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -34,13 +34,15 @@ class ReviewController extends Controller
             'body'      => $data['body'],
         ]);
 
-        ReviewCreated::dispatch(Auth::user());
-
         $review->load('user');
 
+        // check achievements
+        $newAchievements = app(AchievementService::class)->checkAndAward(Auth::user());
+
         return response()->json([
-            'message' => 'Review posted!',
-            'review'  => [
+            'message'          => 'Review posted!',
+            'new_achievements' => $newAchievements,
+            'review'           => [
                 'id'         => $review->id,
                 'body'       => $review->body,
                 'created_at' => $review->created_at->format('M j, Y'),

@@ -40,6 +40,8 @@ class FriendshipController extends Controller
 
         $friendship->update(['status' => 'accepted']);
 
+        app(\App\Services\AchievementService::class)->checkAndAward(Auth::user());
+
         return response()->json(['message' => 'Friend request accepted.', 'status' => 'accepted']);
     }
 
