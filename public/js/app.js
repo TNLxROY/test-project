@@ -429,3 +429,399 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 });
+
+// -------------------------
+// WRITE REVIEW WIDGET
+// -------------------------
+(function () {
+
+    const WR = {
+        mode: 'simple',
+        simpleRating: 0,
+        overallRating: 0,
+        autoAvg: true,
+        categories: [],
+        nextCatId: 1,
+    };
+
+    const RATING_LABELS = ['','Terrible','Bad','Poor','Mediocre','Average','Decent','Good','Great','Excellent','Masterpiece'];
+    const DEFAULT_CATS  = ['Story','Gameplay','Graphics','Soundtrack','Characters'];
+
+    /* ── Init ── */
+    window.addEventListener('DOMContentLoaded', () => {
+        if (!document.getElementById('panel-write')) return; // only on game show page
+        DEFAULT_CATS.forEach(name => addCategory(name, 0));
+        renderCategories();
+        updateDetailedScore();
+        initMainStarRows();
+    });
+
+    /* ── Mode toggle ── */
+    window.wrToggleMode = function () {
+        WR.mode = WR.mode === 'simple' ? 'detailed' : 'simple';
+        document.getElementById('wr-simple').style.display   = WR.mode === 'simple'   ? '' : 'none';
+        document.getElementById('wr-detailed').style.display = WR.mode === 'detailed' ? '' : 'none';
+        const icon  = document.getElementById('wr-toggle-icon');
+        const label = document.getElementById('wr-toggle-label');
+        icon.className    = WR.mode === 'detailed' ? 'ti ti-star' : 'ti ti-list-details';
+        label.textContent = WR.mode === 'detailed' ? 'Simple review' : 'Detailed review';
+    };
+
+    /* ── Shared star+input logic ── */
+
+    // Calculate a decimal rating from a mousemove/click event within a star button.
+    // Each star represents 1 integer. The cursor x-position within the star maps
+    // to tenths: 0–10% = .1, 10–20% = .2 … 90–100% = 1.0 (the full integer).
+    function ratingFromEvent(e, starBtn) {
+        const rect   = starBtn.getBoundingClientRect();
+        const pct    = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        const tenth  = Math.max(1, Math.round(pct * 10)) / 10;  // 0.1 – 1.0
+        const whole  = parseInt(starBtn.dataset.val);
+        return Math.round((whole - 1 + tenth) * 10) / 10;       // e.g. star 7 at 30% → 6.3
+    }
+
+    // Attach precision star listeners to a star row container.
+    // onCommit(val) called on click, onPreview(val) on move, onReset() on leave.
+    function initPrecisionStars(container, onCommit, onPreview, onReset) {
+        container.querySelectorAll('.wr-star').forEach(btn => {
+            btn.addEventListener('mousemove', e => {
+                const val = ratingFromEvent(e, btn);
+                onPreview(val);
+                paintStarsFill(container, val);
+            });
+            btn.addEventListener('mouseleave', () => {
+                onReset();
+            });
+            btn.addEventListener('click', e => {
+                const val = ratingFromEvent(e, btn);
+                onCommit(val);
+            });
+        });
+    }
+
+    // Paint stars with partial fill based on decimal value using CSS clip-path.
+    function paintStarsFill(container, val) {
+        if (!container) return;
+        container.querySelectorAll('.wr-star').forEach(btn => {
+            const v    = parseInt(btn.dataset.val);
+            const icon = btn.querySelector('i');
+            if (v < Math.ceil(val)) {
+                // fully filled stars to the left
+                icon.style.setProperty('--fill', '100%');
+                btn.classList.add('active');
+            } else if (v === Math.ceil(val)) {
+                // the partial star — fill % based on decimal portion
+                const portion = val % 1 === 0 ? 100 : Math.round((val % 1) * 100);
+                icon.style.setProperty('--fill', portion + '%');
+                btn.classList.add('active');
+            } else {
+                // empty stars to the right
+                icon.style.setProperty('--fill', '0%');
+                btn.classList.remove('active');
+            }
+        });
+    }
+
+    // Init precision stars for simple and overall rows on DOMContentLoaded
+    function initMainStarRows() {
+        ['simple', 'overall'].forEach(key => {
+            const container = document.getElementById(starRowId(key));
+            if (!container) return;
+            initPrecisionStars(
+                container,
+                val => { // click → commit
+                    setRatingRaw(key, val);
+                    paintStarsFill(container, val);
+                    syncInput(key, val);
+                    syncLabel(key, val);
+                    if (key === 'overall') updateDetailedScore();
+                },
+                val => { // mousemove → preview input box while hovering
+                    syncInput(key, val);
+                    syncLabel(key, val);
+                },
+                () => { // mouseleave → restore to committed rating
+                    const saved = getRating(key);
+                    paintStarsFill(container, saved);
+                    syncInput(key, saved || '');
+                    syncLabel(key, saved);
+                }
+            );
+        });
+    }
+
+    // Typing in the input box — accepts 1 decimal, updates stars and label
+    window.wrInputChange = function (key, input) {
+        const val = parseFloat(input.value);
+        if (isNaN(val) || input.value === '') {
+            setRatingRaw(key, 0);
+            const c = document.getElementById(starRowId(key));
+            if (c) paintStarsFill(c, 0);
+            syncLabel(key, 0);
+            if (key === 'overall') updateDetailedScore();
+            return;
+        }
+        const clamped = Math.min(10, Math.max(1, Math.round(val * 10) / 10));
+        setRatingRaw(key, clamped);
+        const c = document.getElementById(starRowId(key));
+        if (c) paintStarsFill(c, clamped);
+        syncLabel(key, clamped);
+        if (key === 'overall') updateDetailedScore();
+    };
+
+    function setRatingRaw(key, val) {
+        if      (key === 'simple')  WR.simpleRating  = val;
+        else if (key === 'overall') WR.overallRating = val;
+    }
+
+    function getRating(key) {
+        if (key === 'simple')  return WR.simpleRating;
+        if (key === 'overall') return WR.overallRating;
+        return 0;
+    }
+
+    function starRowId(key) {
+        if (key === 'simple')  return 'wr-stars';
+        if (key === 'overall') return 'wr-overall-stars';
+        return null;
+    }
+
+    function syncInput(key, val) {
+        const id = key === 'simple' ? 'wr-simple-input' : 'wr-overall-input';
+        const el = document.getElementById(id);
+        if (el) el.value = val || '';
+    }
+
+    function syncLabel(key, val) {
+        if (key !== 'simple') return;
+        const lbl = document.getElementById('wr-simple-label');
+        if (lbl) lbl.textContent = RATING_LABELS[Math.round(val)] || '\u00a0';
+    }
+
+    /* ── Category helpers ── */
+    function addCategory(name, rating) {
+        WR.categories.push({ id: WR.nextCatId++, name: name || '', rating: rating || 0 });
+    }
+
+    window.wrAddCategory = function () {
+        addCategory('', 0);
+        renderCategories();
+        updateDetailedScore();
+        const inputs = document.querySelectorAll('.wr-category-name');
+        if (inputs.length) inputs[inputs.length - 1].focus();
+    };
+
+    function removeCategory(id) {
+        WR.categories = WR.categories.filter(c => c.id !== id);
+        renderCategories();
+        updateDetailedScore();
+    }
+
+    function setCatRating(id, val) {
+        const cat = WR.categories.find(c => c.id === id);
+        if (!cat) return;
+        cat.rating = Math.round(val * 10) / 10;
+        updateDetailedScore();
+    }
+
+    /* ── Render categories ── */
+    function renderCategories() {
+        const container = document.getElementById('wr-categories');
+        if (!container) return;
+        container.innerHTML = '';
+
+        WR.categories.forEach(cat => {
+            const row = document.createElement('div');
+            row.className = 'wr-category-row';
+
+            // Name input
+            const inp = document.createElement('input');
+            inp.type = 'text';
+            inp.className = 'wr-category-name';
+            inp.placeholder = 'Category name…';
+            inp.value = cat.name;
+            inp.maxLength = 40;
+            inp.addEventListener('input', e => {
+                const c = WR.categories.find(c => c.id === cat.id);
+                if (c) c.name = e.target.value;
+            });
+
+            // Stars + input wrapper
+            const widget = document.createElement('div');
+            widget.className = 'wr-cat-widget';
+
+            const starsWrap = document.createElement('div');
+            starsWrap.className = 'wr-cat-stars';
+
+            // Score input (declared before stars so star click can reference it)
+            const scoreInp = document.createElement('input');
+            scoreInp.type = 'number';
+            scoreInp.className = 'wr-cat-input';
+            scoreInp.min = 1; scoreInp.max = 10; scoreInp.step = 0.1;
+            scoreInp.placeholder = '—';
+            scoreInp.value = cat.rating || '';
+            scoreInp.addEventListener('input', () => {
+                const v = parseFloat(scoreInp.value);
+                if (isNaN(v) || scoreInp.value === '') {
+                    setCatRating(cat.id, 0);
+                    paintCatStars(starsWrap, 0, false);
+                    return;
+                }
+                const clamped = Math.min(10, Math.max(1, Math.round(v * 10) / 10));
+                setCatRating(cat.id, clamped);
+                paintCatStars(starsWrap, clamped, false);
+                // Don't overwrite scoreInp.value mid-typing
+            });
+
+            for (let i = 1; i <= 10; i++) {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'wr-cat-star';
+                btn.dataset.val = i;
+                btn.innerHTML = '<i class="ti ti-star" aria-hidden="true"></i>';
+                starsWrap.appendChild(btn);
+            }
+            // attach precision listeners after all stars are in the DOM
+            initPrecisionStars(
+                starsWrap,
+                val => { // click → commit
+                    setCatRating(cat.id, val);
+                    scoreInp.value = val;
+                    paintStarsFill(starsWrap, val);
+                },
+                val => { // mousemove → preview
+                    scoreInp.value = val;
+                    paintStarsFill(starsWrap, val);
+                },
+                () => { // mouseleave → restore
+                    paintStarsFill(starsWrap, cat.rating);
+                    scoreInp.value = cat.rating || '';
+                }
+            );
+
+            // Remove button
+            const rm = document.createElement('button');
+            rm.type = 'button';
+            rm.className = 'wr-cat-remove';
+            rm.setAttribute('aria-label', 'Remove category');
+            rm.innerHTML = '<i class="ti ti-x" aria-hidden="true"></i>';
+            rm.addEventListener('click', () => removeCategory(cat.id));
+
+            widget.appendChild(starsWrap);
+            widget.appendChild(scoreInp);
+            row.appendChild(inp);
+            row.appendChild(widget);
+            row.appendChild(rm);
+            container.appendChild(row);
+        });
+    }
+
+    // paintCatStars replaced by paintStarsFill + initPrecisionStars
+
+    /* ── Detailed overall ── */
+    function updateDetailedScore() {
+        const el   = document.getElementById('wr-detailed-score');
+        const hint = document.getElementById('wr-avg-hint');
+        if (!el) return;
+
+        if (WR.autoAvg) {
+            const rated = WR.categories.filter(c => c.rating > 0);
+            if (!rated.length) { el.textContent = '—'; hint.textContent = 'Average of your categories'; return; }
+            const avg     = rated.reduce((s, c) => s + c.rating, 0) / rated.length;
+            const rounded = Math.round(avg * 100) / 100;
+            el.textContent = parseFloat(rounded.toFixed(2));
+            hint.textContent = `Average of ${rated.length} categor${rated.length === 1 ? 'y' : 'ies'}`;
+        } else {
+            el.textContent   = WR.overallRating || '—';
+            hint.textContent = 'Manual overall score';
+        }
+    }
+
+    window.wrToggleAutoAvg = function () {
+        WR.autoAvg = document.getElementById('wr-auto-avg').checked;
+        document.getElementById('wr-manual-overall').style.display = WR.autoAvg ? 'none' : '';
+        if (WR.autoAvg) {
+            WR.overallRating = 0;
+            syncInput('overall', 0);
+            paintStars('wr-overall-stars', 0, false);
+        }
+        updateDetailedScore();
+    };
+
+    /* ── Char count ── */
+    window.wrUpdateCharCount = function (textareaId, counterId) {
+        const ta = document.getElementById(textareaId);
+        const ct = document.getElementById(counterId);
+        if (ta && ct) ct.textContent = ta.value.length;
+    };
+
+    /* ── Submit ── */
+    window.wrSubmit = function (gameId, gameName) {
+        const msgEl = document.getElementById('review-msg');
+        msgEl.textContent = '';
+        msgEl.style.display = 'none';
+
+        let rating, body, categories = null;
+
+        if (WR.mode === 'simple') {
+            if (!WR.simpleRating) { wrShowMsg('Please select a rating before posting.', true); return; }
+            rating = Math.round(WR.simpleRating * 10) / 10;
+            body   = document.getElementById('wr-simple-body').value.trim();
+        } else {
+            const rated = WR.categories.filter(c => c.rating > 0);
+            if (WR.autoAvg) {
+                if (!rated.length) { wrShowMsg('Please rate at least one category.', true); return; }
+                const avg = rated.reduce((s, c) => s + c.rating, 0) / rated.length;
+                rating = Math.round(avg * 100) / 100;
+            } else {
+                if (!WR.overallRating) { wrShowMsg('Please set an overall score.', true); return; }
+                rating = Math.round(WR.overallRating * 10) / 10;
+            }
+            body       = document.getElementById('wr-detailed-body').value.trim();
+            categories = WR.categories
+                .filter(c => c.name.trim() && c.rating > 0)
+                .map(c => ({ name: c.name.trim(), rating: c.rating }));
+        }
+
+        if (body && body.length < 10) { wrShowMsg('Description must be at least 10 characters (or leave it empty).', true); return; }
+
+        const btn = document.getElementById('wr-submit');
+        btn.disabled = true;
+        btn.textContent = 'Posting…';
+
+        fetch(`/games/${gameId}/reviews`, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrf,
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({ rating, body: body || null, categories, is_detailed: WR.mode === 'detailed' }),
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.message === 'Review posted!' || data.id || data.success) {
+                location.reload();
+            } else {
+                wrShowMsg(data.message || 'Something went wrong. Try again.', true);
+                btn.disabled = false;
+                btn.textContent = 'Post Review';
+            }
+        })
+        .catch(() => {
+            wrShowMsg('Network error. Please try again.', true);
+            btn.disabled = false;
+            btn.textContent = 'Post Review';
+        });
+    };
+
+    function wrShowMsg(text, isError) {
+        const el = document.getElementById('review-msg');
+        if (!el) return;
+        el.textContent  = text;
+        el.style.color  = isError ? 'var(--accent)' : '#1d9e75';
+        el.style.display = text ? 'block' : 'none';
+    }
+
+})();

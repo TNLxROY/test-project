@@ -436,23 +436,11 @@
 </div>
 
 {{-- ── WRITE REVIEW PANEL ── --}}
-{{--
-    DROP-IN REPLACEMENT for the old #panel-write div.
-
-    Features:
-    - Mode A (Simple): 1–10 star rating + optional description
-    - Mode B (Detailed): per-category ratings with auto-average OR manual overall score
-    - Animated transitions between modes
-    - submitReview() sends { rating, body, categories? } to your existing route
-      ↳ Make sure your reviews table/model accepts: rating (int), body (text, nullable),
-        categories (json, nullable), is_detailed (bool)
---}}
-
 <div id="panel-write" style="display:none">
     <div class="reviews-layout">
         <div class="show-card write-review-card wr-card">
 
-            {{-- ── Header with mode toggle ── --}}
+            {{-- Header with mode toggle --}}
             <div class="wr-header">
                 <div>
                     <h2 class="show-card-title" style="margin:0">Your Review</h2>
@@ -466,41 +454,39 @@
                 </button>
             </div>
 
-            {{-- ── MODE A: Simple ── --}}
+            {{-- MODE A: Simple --}}
             <div id="wr-simple" class="wr-panel">
-
-                <div class="wr-section-label">Overall rating <span class="wr-optional">(1 – 10, one decimal allowed)</span></div>
-                <div class="wr-rating-input-row">
-                    <input
-                        type="number"
-                        id="wr-simple-score"
-                        class="wr-rating-input"
-                        min="1" max="10" step="0.1"
-                        placeholder="e.g. 8.5"
-                        oninput="wrSimpleInputChange(this)">
-                    <span class="wr-rating-label" id="wr-simple-label">&nbsp;</span>
+                <div class="wr-section-label">Overall rating <span class="wr-optional">(1 decimal allowed)</span></div>
+                <div class="wr-star-widget">
+                    <div class="wr-star-row" id="wr-stars" role="group" aria-label="Rating 1 to 10">
+                        @for($i = 1; $i <= 10; $i++)
+                            <button class="wr-star" data-val="{{ $i }}" type="button"
+                                onclick="wrStarClick('simple', {{ $i }})"
+                                onmouseenter="wrStarHover('simple', {{ $i }})"
+                                onmouseleave="wrStarLeave('simple')"
+                                aria-label="{{ $i }} out of 10">
+                                <i class="ti ti-star" aria-hidden="true"></i>
+                            </button>
+                        @endfor
+                    </div>
+                    <input type="number" id="wr-simple-input" class="wr-score-input"
+                        min="1" max="10" step="0.1" placeholder="—"
+                        oninput="wrInputChange('simple', this)">
                 </div>
+                <p class="wr-rating-label" id="wr-simple-label">&nbsp;</p>
 
                 <div class="wr-section-label" style="margin-top:1.25rem">
                     Description <span class="wr-optional">(optional)</span>
                 </div>
-                <textarea
-                    id="wr-simple-body"
-                    class="review-textarea wr-textarea"
-                    placeholder="Share your thoughts… (max 2000 characters)"
-                    maxlength="2000"
+                <textarea id="wr-simple-body" class="review-textarea wr-textarea"
+                    placeholder="Share your thoughts… (max 2000 characters)" maxlength="2000"
                     oninput="wrUpdateCharCount('wr-simple-body','wr-simple-chars')"></textarea>
-                <div class="review-char-count">
-                    <span id="wr-simple-chars">0</span> / 2000
-                </div>
+                <div class="review-char-count"><span id="wr-simple-chars">0</span> / 2000</div>
             </div>
 
-            {{-- ── MODE B: Detailed ── --}}
+            {{-- MODE B: Detailed --}}
             <div id="wr-detailed" class="wr-panel" style="display:none">
-
-                <div class="wr-categories" id="wr-categories">
-                    {{-- Category rows rendered by JS so they're easy to add/remove --}}
-                </div>
+                <div class="wr-categories" id="wr-categories"></div>
 
                 <button class="wr-add-category" onclick="wrAddCategory()" type="button">
                     <i class="ti ti-plus" aria-hidden="true"></i> Add category
@@ -511,9 +497,7 @@
                 <div class="wr-overall-row">
                     <div class="wr-overall-left">
                         <div class="wr-section-label" style="margin:0">Overall score</div>
-                        <div class="wr-overall-sub" id="wr-avg-hint">
-                            Average of your categories
-                        </div>
+                        <div class="wr-overall-sub" id="wr-avg-hint">Average of your categories</div>
                     </div>
                     <div class="wr-overall-right">
                         <label class="wr-auto-toggle">
@@ -525,39 +509,37 @@
                     </div>
                 </div>
 
-                {{-- Manual overall rating (hidden when auto is on) --}}
+                {{-- Manual overall (hidden when auto is on) --}}
                 <div id="wr-manual-overall" style="display:none; margin-top:.75rem">
-                    <div class="wr-star-row" id="wr-overall-stars" role="group" aria-label="Overall rating 1 to 10">
-                        @for($i = 1; $i <= 10; $i++)
-                            <button
-                                class="wr-star"
-                                data-val="{{ $i }}"
-                                onclick="wrSetOverallRating({{ $i }})"
-                                onmouseenter="wrHoverOverall({{ $i }})"
-                                onmouseleave="wrHoverOverall(0)"
-                                aria-label="{{ $i }} out of 10"
-                                type="button">
-                                <i class="ti ti-star" aria-hidden="true"></i>
-                            </button>
-                        @endfor
+                    <div class="wr-section-label">Manual overall <span class="wr-optional">(1 decimal allowed)</span></div>
+                    <div class="wr-star-widget">
+                        <div class="wr-star-row" id="wr-overall-stars" role="group" aria-label="Overall rating 1 to 10">
+                            @for($i = 1; $i <= 10; $i++)
+                                <button class="wr-star" data-val="{{ $i }}" type="button"
+                                    onclick="wrStarClick('overall', {{ $i }})"
+                                    onmouseenter="wrStarHover('overall', {{ $i }})"
+                                    onmouseleave="wrStarLeave('overall')"
+                                    aria-label="{{ $i }} out of 10">
+                                    <i class="ti ti-star" aria-hidden="true"></i>
+                                </button>
+                            @endfor
+                        </div>
+                        <input type="number" id="wr-overall-input" class="wr-score-input"
+                            min="1" max="10" step="0.1" placeholder="—"
+                            oninput="wrInputChange('overall', this)">
                     </div>
                 </div>
 
                 <div class="wr-section-label" style="margin-top:1.25rem">
                     Description <span class="wr-optional">(optional)</span>
                 </div>
-                <textarea
-                    id="wr-detailed-body"
-                    class="review-textarea wr-textarea"
-                    placeholder="Share your overall thoughts… (max 2000 characters)"
-                    maxlength="2000"
+                <textarea id="wr-detailed-body" class="review-textarea wr-textarea"
+                    placeholder="Share your overall thoughts… (max 2000 characters)" maxlength="2000"
                     oninput="wrUpdateCharCount('wr-detailed-body','wr-detailed-chars')"></textarea>
-                <div class="review-char-count">
-                    <span id="wr-detailed-chars">0</span> / 2000
-                </div>
+                <div class="review-char-count"><span id="wr-detailed-chars">0</span> / 2000</div>
             </div>
 
-            {{-- ── Submit ── --}}
+            {{-- Submit --}}
             <div class="wr-footer">
                 <button class="btn btn-primary wr-submit" id="wr-submit"
                     onclick="wrSubmit({{ $game['id'] }}, '{{ addslashes($game['name']) }}')">
@@ -568,591 +550,6 @@
         </div>
     </div>
 </div>
-
-
-{{-- ══════════════════════════════════════════════════════════
-     STYLES  (add to your main CSS file instead if preferred)
-════════════════════════════════════════════════════════════ --}}
-<style>
-/* ── Card layout ── */
-.wr-card { padding: 1.5rem 1.75rem; }
-
-.wr-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.wr-mode-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: .4rem;
-    padding: .45rem .9rem;
-    border: 1px solid var(--color-border, rgba(255,255,255,.18));
-    border-radius: 2rem;
-    background: transparent;
-    color: var(--color-text-secondary, #aaa);
-    font-size: .8rem;
-    cursor: pointer;
-    transition: background .2s, color .2s, border-color .2s;
-    white-space: nowrap;
-}
-.wr-mode-toggle:hover {
-    background: rgba(255,255,255,.06);
-    color: var(--color-text-primary, #fff);
-    border-color: rgba(255,255,255,.35);
-}
-.wr-mode-toggle i { font-size: 1rem; }
-
-/* ── Panels ── */
-.wr-panel { animation: wrFadeIn .22s ease; }
-@keyframes wrFadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
-
-.wr-section-label {
-    font-size: .72rem;
-    font-weight: 600;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    color: var(--color-text-secondary, #888);
-    margin-bottom: .6rem;
-}
-.wr-optional { font-weight: 400; text-transform: none; letter-spacing: 0; opacity: .7; }
-
-/* ── Simple rating input ── */
-.wr-rating-input-row {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-.wr-rating-input {
-    width: 90px;
-    padding: .45rem .75rem;
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #f5a623;
-    background: transparent;
-    border: 1px solid var(--color-border, rgba(255,255,255,.18));
-    border-radius: 8px;
-    outline: none;
-    transition: border-color .2s;
-    -moz-appearance: textfield;
-}
-.wr-rating-input::-webkit-inner-spin-button,
-.wr-rating-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.wr-rating-input::placeholder { color: var(--color-text-tertiary, #555); font-size: 1rem; font-weight: 400; }
-.wr-rating-input:focus { border-color: #f5a623; }
-
-/* ── Star row (detailed category mini-stars only) ── */
-.wr-star-row {
-    display: flex;
-    align-items: center;
-    gap: .15rem;
-    flex-wrap: wrap;
-}
-.wr-star {
-    background: none;
-    border: none;
-    padding: .2rem;
-    cursor: pointer;
-    color: var(--color-text-tertiary, #555);
-    font-size: 1.45rem;
-    line-height: 1;
-    transition: color .12s, transform .1s;
-}
-.wr-star:hover, .wr-star.hovered, .wr-star.active {
-    color: #f5a623;
-    transform: scale(1.15);
-}
-.wr-star.active i::before { content: "\ea78"; }
-
-.wr-rating-display {
-    min-width: 2.5rem;
-    margin-left: .6rem;
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: #f5a623;
-    line-height: 1;
-}
-.wr-overall-score { font-size: 1.3rem; }
-
-.wr-rating-label {
-    font-size: .85rem;
-    color: var(--color-text-secondary, #aaa);
-    min-height: 1.2em;
-    transition: opacity .2s;
-}
-
-/* ── Textarea ── */
-.wr-textarea {
-    width: 100%;
-    min-height: 90px;
-    resize: vertical;
-    box-sizing: border-box;
-}
-
-/* ── Categories ── */
-.wr-category-row {
-    display: grid;
-    grid-template-columns: 1fr auto auto;
-    align-items: center;
-    gap: .6rem;
-    margin-bottom: .65rem;
-    animation: wrFadeIn .18s ease;
-}
-.wr-category-name {
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid var(--color-border, rgba(255,255,255,.15));
-    color: var(--color-text-primary, #fff);
-    font-size: .9rem;
-    padding: .3rem .1rem;
-    outline: none;
-    width: 100%;
-    transition: border-color .2s;
-}
-.wr-category-name:focus { border-bottom-color: #f5a623; }
-.wr-category-name::placeholder { color: var(--color-text-tertiary, #555); }
-
-.wr-cat-stars {
-    display: flex;
-    gap: .05rem;
-}
-.wr-cat-star {
-    background: none;
-    border: none;
-    padding: .1rem;
-    cursor: pointer;
-    color: var(--color-text-tertiary, #555);
-    font-size: 1rem;
-    transition: color .1s, transform .08s;
-}
-.wr-cat-star:hover, .wr-cat-star.hovered, .wr-cat-star.active {
-    color: #f5a623;
-    transform: scale(1.15);
-}
-
-.wr-cat-score {
-    min-width: 1.6rem;
-    font-size: .95rem;
-    font-weight: 600;
-    color: #f5a623;
-    text-align: right;
-}
-.wr-cat-remove {
-    background: none;
-    border: none;
-    color: var(--color-text-tertiary, #555);
-    cursor: pointer;
-    font-size: 1rem;
-    padding: .2rem;
-    border-radius: 4px;
-    transition: color .15s;
-}
-.wr-cat-remove:hover { color: #e24b4a; }
-
-.wr-add-category {
-    display: inline-flex;
-    align-items: center;
-    gap: .35rem;
-    background: none;
-    border: 1px dashed var(--color-border, rgba(255,255,255,.2));
-    border-radius: 6px;
-    color: var(--color-text-secondary, #888);
-    font-size: .8rem;
-    padding: .4rem .8rem;
-    cursor: pointer;
-    margin-top: .25rem;
-    transition: border-color .2s, color .2s;
-}
-.wr-add-category:hover {
-    border-color: rgba(255,255,255,.45);
-    color: var(--color-text-primary, #fff);
-}
-
-/* ── Divider ── */
-.wr-divider {
-    border: none;
-    border-top: 1px solid var(--color-border, rgba(255,255,255,.1));
-    margin: 1.25rem 0;
-}
-
-/* ── Overall row ── */
-.wr-overall-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-}
-.wr-overall-sub {
-    font-size: .78rem;
-    color: var(--color-text-secondary, #888);
-    margin-top: .2rem;
-}
-.wr-overall-right {
-    display: flex;
-    align-items: center;
-    gap: .75rem;
-}
-
-/* ── Auto-avg toggle ── */
-.wr-auto-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: .5rem;
-    font-size: .78rem;
-    color: var(--color-text-secondary, #888);
-    cursor: pointer;
-    user-select: none;
-}
-.wr-auto-toggle input { display: none; }
-.wr-auto-toggle-track {
-    width: 34px;
-    height: 18px;
-    border-radius: 99px;
-    background: var(--color-border, rgba(255,255,255,.18));
-    position: relative;
-    transition: background .2s;
-    flex-shrink: 0;
-}
-.wr-auto-toggle-track::after {
-    content: '';
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--color-text-secondary, #aaa);
-    top: 3px; left: 3px;
-    transition: transform .2s, background .2s;
-}
-.wr-auto-toggle input:checked + .wr-auto-toggle-track {
-    background: #f5a623;
-}
-.wr-auto-toggle input:checked + .wr-auto-toggle-track::after {
-    transform: translateX(16px);
-    background: #fff;
-}
-
-/* ── Footer ── */
-.wr-footer {
-    margin-top: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-.wr-submit { padding: .55rem 1.6rem; }
-</style>
-
-
-{{-- ══════════════════════════════════════════════════════════
-     JAVASCRIPT
-════════════════════════════════════════════════════════════ --}}
-<script>
-(function () {
-
-    /* ── State ── */
-    const WR = {
-        mode: 'simple',          // 'simple' | 'detailed'
-        simpleRating: 0,
-        overallRating: 0,        // manual overall (detailed mode)
-        autoAvg: true,
-        categories: [],          // [{ id, name, rating }]
-        nextCatId: 1,
-    };
-
-    const RATING_LABELS = ['','Terrible','Bad','Poor','Mediocre','Average','Decent','Good','Great','Excellent','Masterpiece'];
-    const DEFAULT_CATS  = ['Story','Gameplay','Graphics','Soundtrack','Characters'];
-
-    /* ─────────────────────────────── Init ── */
-    window.addEventListener('DOMContentLoaded', () => {
-        DEFAULT_CATS.forEach(name => addCategory(name, 0));
-        renderCategories();
-        updateDetailedScore();
-    });
-
-    /* ─────────────────────────────── Mode toggle ── */
-    window.wrToggleMode = function () {
-        WR.mode = WR.mode === 'simple' ? 'detailed' : 'simple';
-        document.getElementById('wr-simple').style.display   = WR.mode === 'simple'   ? '' : 'none';
-        document.getElementById('wr-detailed').style.display = WR.mode === 'detailed' ? '' : 'none';
-
-        const icon  = document.getElementById('wr-toggle-icon');
-        const label = document.getElementById('wr-toggle-label');
-        if (WR.mode === 'detailed') {
-            icon.className  = 'ti ti-star';
-            label.textContent = 'Simple review';
-        } else {
-            icon.className  = 'ti ti-list-details';
-            label.textContent = 'Detailed review';
-        }
-    };
-
-    /* ─────────────────────────────── Simple rating ── */
-    window.wrSimpleInputChange = function (input) {
-        const lbl = document.getElementById('wr-simple-label');
-        let val = parseFloat(input.value);
-
-        // clamp and round to 1 decimal
-        if (isNaN(val)) {
-            WR.simpleRating = 0;
-            lbl.textContent = ' ';
-            input.style.borderColor = '';
-            return;
-        }
-        val = Math.round(val * 10) / 10;
-        val = Math.min(10, Math.max(1, val));
-
-        // fix the value in the input
-        input.value = val;
-        WR.simpleRating = val;
-
-        lbl.textContent = RATING_LABELS[Math.round(val)] || '';
-        input.style.borderColor = '#f5a623';
-    };
-
-    /* ─────────────────────────────── Category helpers ── */
-    function addCategory(name, rating) {
-        const id = WR.nextCatId++;
-        WR.categories.push({ id, name: name || '', rating: rating || 0 });
-        return id;
-    }
-
-    window.wrAddCategory = function () {
-        addCategory('', 0);
-        renderCategories();
-        updateDetailedScore();
-        // focus new name input
-        const inputs = document.querySelectorAll('.wr-category-name');
-        if (inputs.length) inputs[inputs.length - 1].focus();
-    };
-
-    function removeCategory(id) {
-        WR.categories = WR.categories.filter(c => c.id !== id);
-        renderCategories();
-        updateDetailedScore();
-    }
-
-    function setCatRating(id, val) {
-        const cat = WR.categories.find(c => c.id === id);
-        if (cat) cat.rating = val;
-        renderCategories();
-        updateDetailedScore();
-    }
-
-    /* ─────────────────────────────── Render categories ── */
-    function renderCategories() {
-        const container = document.getElementById('wr-categories');
-        container.innerHTML = '';
-
-        WR.categories.forEach(cat => {
-            const row = document.createElement('div');
-            row.className = 'wr-category-row';
-            row.dataset.id = cat.id;
-
-            // Name input
-            const inp = document.createElement('input');
-            inp.type = 'text';
-            inp.className = 'wr-category-name';
-            inp.placeholder = 'Category name…';
-            inp.value = cat.name;
-            inp.maxLength = 40;
-            inp.addEventListener('input', e => {
-                const c = WR.categories.find(c => c.id === cat.id);
-                if (c) c.name = e.target.value;
-            });
-
-            // Stars
-            const starsWrap = document.createElement('div');
-            starsWrap.className = 'wr-cat-stars';
-            for (let i = 1; i <= 10; i++) {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'wr-cat-star' + (i <= cat.rating ? ' active' : '');
-                btn.dataset.val = i;
-                btn.setAttribute('aria-label', `${i} out of 10`);
-                btn.innerHTML = '<i class="ti ti-star" aria-hidden="true"></i>';
-                btn.addEventListener('click', () => setCatRating(cat.id, i));
-                btn.addEventListener('mouseenter', () => paintCatStars(starsWrap, i, true));
-                btn.addEventListener('mouseleave', () => paintCatStars(starsWrap, cat.rating, false));
-                starsWrap.appendChild(btn);
-            }
-
-            // Score label
-            const score = document.createElement('span');
-            score.className = 'wr-cat-score';
-            score.textContent = cat.rating || '—';
-
-            // Remove button
-            const rm = document.createElement('button');
-            rm.type = 'button';
-            rm.className = 'wr-cat-remove';
-            rm.setAttribute('aria-label', 'Remove category');
-            rm.innerHTML = '<i class="ti ti-x" aria-hidden="true"></i>';
-            rm.addEventListener('click', () => removeCategory(cat.id));
-
-            row.appendChild(inp);
-            row.appendChild(starsWrap);
-            row.appendChild(score);
-            row.appendChild(rm);
-            container.appendChild(row);
-        });
-    }
-
-    function paintCatStars(wrap, val, isHover) {
-        wrap.querySelectorAll('.wr-cat-star').forEach(btn => {
-            const v = parseInt(btn.dataset.val);
-            btn.classList.toggle('active',  !isHover && v <= val);
-            btn.classList.toggle('hovered',  isHover && v <= val);
-        });
-    }
-
-    /* ─────────────────────────────── Detailed overall ── */
-    function updateDetailedScore() {
-        const el = document.getElementById('wr-detailed-score');
-        const hint = document.getElementById('wr-avg-hint');
-
-        if (WR.autoAvg) {
-            const rated = WR.categories.filter(c => c.rating > 0);
-            if (!rated.length) {
-                el.textContent = '—';
-                hint.textContent = 'Average of your categories';
-                return;
-            }
-            const avg = rated.reduce((s, c) => s + c.rating, 0) / rated.length;
-            const rounded = Math.round(avg * 100) / 100;
-            el.textContent = parseFloat(rounded.toFixed(2));
-            hint.textContent = `Average of ${rated.length} categor${rated.length === 1 ? 'y' : 'ies'}`;
-        } else {
-            el.textContent = WR.overallRating || '—';
-            hint.textContent = 'Manual overall score';
-        }
-    }
-
-    window.wrToggleAutoAvg = function () {
-        WR.autoAvg = document.getElementById('wr-auto-avg').checked;
-        document.getElementById('wr-manual-overall').style.display = WR.autoAvg ? 'none' : '';
-        if (WR.autoAvg) WR.overallRating = 0;
-        updateDetailedScore();
-    };
-
-    window.wrSetOverallRating = function (val) {
-        WR.overallRating = val;
-        paintStars('wr-overall-stars', val, false);
-        updateDetailedScore();
-    };
-
-    window.wrHoverOverall = function (val) {
-        paintStars('wr-overall-stars', val || WR.overallRating, val > 0);
-    };
-
-    /* ─────────────────────────────── Generic star painter ── */
-    function paintStars(containerId, val, isHover) {
-        const container = document.getElementById(containerId);
-        if (!container) return;
-        container.querySelectorAll('.wr-star').forEach(btn => {
-            const v = parseInt(btn.dataset.val);
-            btn.classList.toggle('active',   !isHover && v <= val);
-            btn.classList.toggle('hovered',   isHover && v <= val);
-        });
-    }
-
-    /* ─────────────────────────────── Char count ── */
-    window.wrUpdateCharCount = function (textareaId, counterId) {
-        const ta = document.getElementById(textareaId);
-        const ct = document.getElementById(counterId);
-        if (ta && ct) ct.textContent = ta.value.length;
-    };
-
-    /* ─────────────────────────────── Submit ── */
-    window.wrSubmit = function (gameId, gameName) {
-        const msg = document.getElementById('review-msg');
-        msg.textContent = '';
-
-        let rating, body, categories = null;
-
-        if (WR.mode === 'simple') {
-            if (!WR.simpleRating) {
-                showMsg('Please select a rating before posting.', true);
-                return;
-            }
-            rating = Math.round(WR.simpleRating * 10) / 10;
-            body   = document.getElementById('wr-simple-body').value.trim();
-
-        } else {
-            // Detailed mode
-            const rated = WR.categories.filter(c => c.rating > 0);
-
-            if (WR.autoAvg) {
-                if (!rated.length) {
-                    showMsg('Please rate at least one category.', true);
-                    return;
-                }
-                const avg = rated.reduce((s, c) => s + c.rating, 0) / rated.length;
-                rating = Math.round(avg);
-            } else {
-                if (!WR.overallRating) {
-                    showMsg('Please set an overall score.', true);
-                    return;
-                }
-                rating = WR.overallRating;
-            }
-
-            body       = document.getElementById('wr-detailed-body').value.trim();
-            categories = WR.categories
-                .filter(c => c.name.trim() && c.rating > 0)
-                .map(c => ({ name: c.name.trim(), rating: c.rating }));
-        }
-
-        if (body && body.length < 10) {
-            showMsg('Description must be at least 10 characters (or leave it empty).', true);
-            return;
-        }
-
-        const btn = document.getElementById('wr-submit');
-        btn.disabled = true;
-        btn.textContent = 'Posting…';
-
-        fetch(`/games/${gameId}/reviews`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json',
-            },
-            body: JSON.stringify({
-                rating,
-                body: body || null,
-                categories: categories,
-                is_detailed: WR.mode === 'detailed',
-            }),
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success || data.id) {
-                location.reload();
-            } else {
-                showMsg(data.message || 'Something went wrong. Try again.', true);
-                btn.disabled = false;
-                btn.textContent = 'Post Review';
-            }
-        })
-        .catch(() => {
-            showMsg('Network error. Please try again.', true);
-            btn.disabled = false;
-            btn.textContent = 'Post Review';
-        });
-    };
-
-    function showMsg(text, isError) {
-        const el = document.getElementById('review-msg');
-        el.textContent = text;
-        el.style.color = isError ? 'var(--color-danger, #e24b4a)' : 'var(--color-success, #1d9e75)';
-    }
-
-})();
-</script>
 
 <script>
 function toggleSysreq(header) {
