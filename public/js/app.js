@@ -71,7 +71,9 @@ window.showNotif = (msg) => {
 
 function showMsg(msg) {
     const el = document.getElementById('auth-msg');
-    if (el) el.innerText = msg;
+    if (!el) return;
+    el.innerText      = msg;
+    el.style.display  = msg ? 'block' : 'none';
 }
 
 function clearMsg() {

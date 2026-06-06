@@ -17,7 +17,11 @@
     <div id="form-register" style="display:none">
       <div class="form-group"><label>Username</label><input type="text" placeholder="dev42" id="reg-user" name="name"></div>
       <div class="form-group"><label>Email</label><input type="email" placeholder="you@example.com" id="reg-email" name="email"></div>
-      <div class="form-group"><label>Password</label><input type="password" placeholder="••••••••" id="reg-pass" name="password"></div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" placeholder="••••••••" id="reg-pass" name="password" oninput="checkPasswordLength(this)">
+        <small id="reg-pass-hint" style="font-size:.75rem; margin-top:.3rem; display:none"></small>
+      </div>
       <button type="button" class="btn btn-primary" onclick="doRegister()">Create account</button>
     </div>
 

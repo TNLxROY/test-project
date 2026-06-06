@@ -9,7 +9,6 @@
 <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 <link rel="stylesheet" href="{{ asset('css/components/searchbar.css') }}">
 </head>
-<script src="{{ asset('js/app.js') }}"></script>
 <body>
 @include('partials.nav')
 
@@ -21,5 +20,6 @@
 
 @include('partials.modal')
 
+<script src="{{ asset('js/app.js') }}"></script>
 </body>
 </html>

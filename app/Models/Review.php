@@ -6,7 +6,21 @@ use Illuminate\Database\Eloquent\Model;
 
 class Review extends Model
 {
-    protected $fillable = ['user_id', 'game_id', 'game_name', 'body'];
+    protected $fillable = [
+        'user_id',
+        'game_id',
+        'game_name',
+        'body',
+        'rating',
+        'categories',
+        'is_detailed',
+    ];
+
+    protected $casts = [
+        'rating'      => 'integer',
+        'categories'  => 'array',
+        'is_detailed' => 'boolean',
+    ];
 
     public function user()
     {

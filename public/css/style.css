@@ -2588,3 +2588,7 @@ footer{
     top: -2px;
     position: relative;
 }
+
+#reg-pass-hint { display: block; transition: color .2s; }
+#reg-pass-hint.hint-weak  { color: #e24b4a; }
+#reg-pass-hint.hint-ok    { color: #1d9e75; }

@@ -13,7 +13,10 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('game_id');
             $table->string('game_name');
-            $table->text('body');
+            $table->unsignedTinyInteger('rating');
+            $table->text('body')->nullable();
+            $table->json('categories')->nullable();
+            $table->boolean('is_detailed')->default(false);
             $table->timestamps();
 
             $table->unique(['user_id', 'game_id']); // 1 review per user per game
