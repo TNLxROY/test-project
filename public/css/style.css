@@ -1872,7 +1872,7 @@ footer{
     gap: 1.5rem;
     flex-shrink: 0;
 }
-.player-hero-avatar-wrap { flex-shrink: 0; }
+.player-hero-avatar-wrap { flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
 .player-hero-avatar-img {
     width: 175px;
     height: 175px;
@@ -1882,8 +1882,8 @@ footer{
     display: block;
 }
 .player-hero-avatar-initials {
-    width: 120px;
-    height: 120px;
+    width: 175px;
+    height: 175px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--accent), #b91c1c);
     display: flex;

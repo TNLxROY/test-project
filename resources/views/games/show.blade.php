@@ -469,23 +469,17 @@
             {{-- ── MODE A: Simple ── --}}
             <div id="wr-simple" class="wr-panel">
 
-                <div class="wr-section-label">Overall rating</div>
-                <div class="wr-star-row" id="wr-stars" role="group" aria-label="Rating 1 to 10">
-                    @for($i = 1; $i <= 10; $i++)
-                        <button
-                            class="wr-star"
-                            data-val="{{ $i }}"
-                            onclick="wrSetSimpleRating({{ $i }})"
-                            onmouseenter="wrHoverRating({{ $i }})"
-                            onmouseleave="wrHoverRating(0)"
-                            aria-label="{{ $i }} out of 10"
-                            type="button">
-                            <i class="ti ti-star" aria-hidden="true"></i>
-                        </button>
-                    @endfor
-                    <span class="wr-rating-display" id="wr-simple-score">—</span>
+                <div class="wr-section-label">Overall rating <span class="wr-optional">(1 – 10, one decimal allowed)</span></div>
+                <div class="wr-rating-input-row">
+                    <input
+                        type="number"
+                        id="wr-simple-score"
+                        class="wr-rating-input"
+                        min="1" max="10" step="0.1"
+                        placeholder="e.g. 8.5"
+                        oninput="wrSimpleInputChange(this)">
+                    <span class="wr-rating-label" id="wr-simple-label">&nbsp;</span>
                 </div>
-                <p class="wr-rating-label" id="wr-simple-label">&nbsp;</p>
 
                 <div class="wr-section-label" style="margin-top:1.25rem">
                     Description <span class="wr-optional">(optional)</span>
@@ -626,14 +620,37 @@
 }
 .wr-optional { font-weight: 400; text-transform: none; letter-spacing: 0; opacity: .7; }
 
-/* ── Star row ── */
+/* ── Simple rating input ── */
+.wr-rating-input-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.wr-rating-input {
+    width: 90px;
+    padding: .45rem .75rem;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #f5a623;
+    background: transparent;
+    border: 1px solid var(--color-border, rgba(255,255,255,.18));
+    border-radius: 8px;
+    outline: none;
+    transition: border-color .2s;
+    -moz-appearance: textfield;
+}
+.wr-rating-input::-webkit-inner-spin-button,
+.wr-rating-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.wr-rating-input::placeholder { color: var(--color-text-tertiary, #555); font-size: 1rem; font-weight: 400; }
+.wr-rating-input:focus { border-color: #f5a623; }
+
+/* ── Star row (detailed category mini-stars only) ── */
 .wr-star-row {
     display: flex;
     align-items: center;
     gap: .15rem;
     flex-wrap: wrap;
 }
-
 .wr-star {
     background: none;
     border: none;
@@ -648,7 +665,7 @@
     color: #f5a623;
     transform: scale(1.15);
 }
-.wr-star.active i::before { content: "\ea78"; } /* ti-star-filled */
+.wr-star.active i::before { content: "\ea78"; }
 
 .wr-rating-display {
     min-width: 2.5rem;
@@ -663,7 +680,6 @@
 .wr-rating-label {
     font-size: .85rem;
     color: var(--color-text-secondary, #aaa);
-    margin: .3rem 0 0;
     min-height: 1.2em;
     transition: opacity .2s;
 }
@@ -874,15 +890,26 @@
     };
 
     /* ─────────────────────────────── Simple rating ── */
-    window.wrSetSimpleRating = function (val) {
-        WR.simpleRating = val;
-        paintStars('wr-stars', val, false);
-        document.getElementById('wr-simple-score').textContent = val;
-        document.getElementById('wr-simple-label').textContent = RATING_LABELS[val] || '';
-    };
+    window.wrSimpleInputChange = function (input) {
+        const lbl = document.getElementById('wr-simple-label');
+        let val = parseFloat(input.value);
 
-    window.wrHoverRating = function (val) {
-        paintStars('wr-stars', val || WR.simpleRating, val > 0);
+        // clamp and round to 1 decimal
+        if (isNaN(val)) {
+            WR.simpleRating = 0;
+            lbl.textContent = ' ';
+            input.style.borderColor = '';
+            return;
+        }
+        val = Math.round(val * 10) / 10;
+        val = Math.min(10, Math.max(1, val));
+
+        // fix the value in the input
+        input.value = val;
+        WR.simpleRating = val;
+
+        lbl.textContent = RATING_LABELS[Math.round(val)] || '';
+        input.style.borderColor = '#f5a623';
     };
 
     /* ─────────────────────────────── Category helpers ── */
@@ -994,8 +1021,8 @@
                 return;
             }
             const avg = rated.reduce((s, c) => s + c.rating, 0) / rated.length;
-            const rounded = Math.round(avg * 10) / 10;
-            el.textContent = Number.isInteger(rounded) ? rounded : rounded.toFixed(1);
+            const rounded = Math.round(avg * 100) / 100;
+            el.textContent = parseFloat(rounded.toFixed(2));
             hint.textContent = `Average of ${rated.length} categor${rated.length === 1 ? 'y' : 'ies'}`;
         } else {
             el.textContent = WR.overallRating || '—';
@@ -1050,7 +1077,7 @@
                 showMsg('Please select a rating before posting.', true);
                 return;
             }
-            rating = WR.simpleRating;
+            rating = Math.round(WR.simpleRating * 10) / 10;
             body   = document.getElementById('wr-simple-body').value.trim();
 
         } else {

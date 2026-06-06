@@ -24,7 +24,7 @@ class ReviewController extends Controller
         }
 
         $data = $request->validate([
-            'rating'      => ['required', 'integer', 'min:1', 'max:10'],
+            'rating'      => ['required', 'numeric', 'min:1', 'max:10'],
             'body'        => ['nullable', 'string', 'min:10', 'max:2000'],
             'is_detailed' => ['boolean'],
             'categories'  => ['nullable', 'array'],

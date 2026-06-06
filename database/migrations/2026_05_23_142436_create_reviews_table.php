@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('game_id');
             $table->string('game_name');
-            $table->unsignedTinyInteger('rating');
+            $table->decimal('rating', 4, 2);
             $table->text('body')->nullable();
             $table->json('categories')->nullable();
             $table->boolean('is_detailed')->default(false);
