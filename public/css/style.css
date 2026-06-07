@@ -2667,30 +2667,15 @@ footer{
 .wr-star {
     background: none;
     border: none;
-    padding: .2rem;
+    padding: .15rem;
     cursor: crosshair;
     font-size: 1.4rem;
     line-height: 1;
-    position: relative;
-}
-/* Each star icon has a partial amber fill via a pseudo overlay */
-.wr-star i {
-    display: block;
     color: var(--muted);
-    position: relative;
+    transition: color .1s;
 }
-/* The filled layer sits on top, clipped to --fill width */
-.wr-star i::after {
-    content: "\ea78"; /* ti-star-filled */
-    font-family: 'tabler-icons';
-    position: absolute;
-    inset: 0;
-    color: #f5a623;
-    overflow: hidden;
-    width: var(--fill, 0%);
-    white-space: nowrap;
-}
-.wr-star.active i::after { width: var(--fill, 100%); }
+.wr-star.lit { color: #f5a623; }
+.wr-star.lit-partial { color: #f5a623; opacity: .45; }
 
 /* ── Synced number input ── */
 .wr-score-input {
@@ -2757,27 +2742,14 @@ footer{
 .wr-cat-star {
     background: none;
     border: none;
-    padding: .08rem;
+    padding: .06rem;
     cursor: crosshair;
     font-size: .95rem;
-    position: relative;
-}
-.wr-cat-star i {
-    display: block;
     color: var(--muted);
-    position: relative;
+    transition: color .1s;
 }
-.wr-cat-star i::after {
-    content: "\ea78";
-    font-family: 'tabler-icons';
-    position: absolute;
-    inset: 0;
-    color: #f5a623;
-    overflow: hidden;
-    width: var(--fill, 0%);
-    white-space: nowrap;
-}
-.wr-cat-star.active i::after { width: var(--fill, 100%); }
+.wr-cat-star.lit { color: #f5a623; }
+.wr-cat-star.lit-partial { color: #f5a623; opacity: .45; }
 
 .wr-cat-input {
     width: 52px;
@@ -2897,3 +2869,36 @@ footer{
     flex-wrap: wrap;
 }
 .wr-submit { padding: .55rem 1.6rem; }
+
+
+/* ── Review card rating display ── */
+.review-rating-row {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    margin: .5rem 0 .6rem;
+}
+.review-stars { display: flex; gap: .05rem; }
+.review-star {
+    font-size: .95rem;
+    line-height: 1;
+    color: var(--muted);
+}
+.review-star.lit { color: #f5a623; }
+.review-star.lit-partial { color: #f5a623; opacity: .45; }
+.review-score {
+    font-size: .95rem;
+    font-weight: 700;
+    color: #f5a623;
+    min-width: 2rem;
+}
+.review-detailed-badge {
+    font-size: .68rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: .15rem .5rem;
+}

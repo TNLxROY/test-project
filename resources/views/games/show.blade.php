@@ -428,7 +428,30 @@
                         @endif
                     @endauth
                 </div>
+                {{-- Rating display --}}
+                @if($review->rating)
+                <div class="review-rating-row">
+                    <div class="review-stars">
+                        @for($s = 1; $s <= 10; $s++)
+                            @php
+                            $starClass = 'review-star';
+                            if ($s <= floor($review->rating)) $starClass .= ' lit';
+                            elseif ($s == ceil($review->rating) && fmod($review->rating, 1) > 0) $starClass .= ' lit-partial';
+                        @endphp
+                            <span class="{{ $starClass }}">
+                                <i class="ti ti-star" aria-hidden="true"></i>
+                            </span>
+                        @endfor
+                    </div>
+                    <span class="review-score">{{ $review->rating }}</span>
+                    @if($review->is_detailed)
+                        <span class="review-detailed-badge">Detailed</span>
+                    @endif
+                </div>
+                @endif
+                @if($review->body)
                 <p class="review-body">{{ $review->body }}</p>
+                @endif
             </div>
             @endforeach
         @endif
@@ -461,9 +484,6 @@
                     <div class="wr-star-row" id="wr-stars" role="group" aria-label="Rating 1 to 10">
                         @for($i = 1; $i <= 10; $i++)
                             <button class="wr-star" data-val="{{ $i }}" type="button"
-                                onclick="wrStarClick('simple', {{ $i }})"
-                                onmouseenter="wrStarHover('simple', {{ $i }})"
-                                onmouseleave="wrStarLeave('simple')"
                                 aria-label="{{ $i }} out of 10">
                                 <i class="ti ti-star" aria-hidden="true"></i>
                             </button>
@@ -516,9 +536,6 @@
                         <div class="wr-star-row" id="wr-overall-stars" role="group" aria-label="Overall rating 1 to 10">
                             @for($i = 1; $i <= 10; $i++)
                                 <button class="wr-star" data-val="{{ $i }}" type="button"
-                                    onclick="wrStarClick('overall', {{ $i }})"
-                                    onmouseenter="wrStarHover('overall', {{ $i }})"
-                                    onmouseleave="wrStarLeave('overall')"
                                     aria-label="{{ $i }} out of 10">
                                     <i class="ti ti-star" aria-hidden="true"></i>
                                 </button>

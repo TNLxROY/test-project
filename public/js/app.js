@@ -247,7 +247,7 @@ window.doRegister = async () => {
     try {
         const res  = await authFetch('/register', {
             method: 'POST',
-            body: JSON.stringify({ name, email, password })
+            body: JSON.stringify({ name, email, password, password_confirmation: password })
         });
         const data = await res.json().catch(() => ({}));
 
@@ -321,6 +321,17 @@ window.submitReview = async function(gameId, gameName) {
         const card = document.createElement('div');
         card.className = 'review-card';
         card.id = 'review-' + data.review.id;
+
+        // Build star HTML for the rating
+        const rating = data.review.rating || 0;
+        let starsHtml = '';
+        for (let s = 1; s <= 10; s++) {
+            let cls = 'review-star';
+            if (s <= Math.floor(rating)) cls += ' lit';
+            else if (s === Math.ceil(rating) && rating % 1 > 0) cls += ' lit-partial';
+            starsHtml += `<span class="${cls}"><i class="ti ti-star"></i></span>`;
+        }
+
         card.innerHTML = `
             <div class="review-header">
                 <div class="review-avatar">${data.review.user.name[0].toUpperCase()}</div>
@@ -332,7 +343,12 @@ window.submitReview = async function(gameId, gameName) {
                     <i class="ti ti-trash" aria-hidden="true"></i>
                 </button>
             </div>
-            <p class="review-body">${data.review.body}</p>
+            ${rating ? `<div class="review-rating-row">
+                <div class="review-stars">${starsHtml}</div>
+                <span class="review-score">${rating}</span>
+                ${data.review.is_detailed ? '<span class="review-detailed-badge">Detailed</span>' : ''}
+            </div>` : ''}
+            ${data.review.body ? `<p class="review-body">${data.review.body}</p>` : ''}
         `;
         list.prepend(card);
 
@@ -363,8 +379,31 @@ window.deleteReview = async function(reviewId, gameId) {
 
     if (res.ok) {
         document.getElementById('review-' + reviewId)?.remove();
+
         const badge = document.getElementById('review-count-badge');
         if (badge) badge.textContent = Math.max(0, parseInt(badge.textContent || 1) - 1);
+
+        // Restore "Write a Review" tab
+        const reviewedBadge = document.querySelector('.reviewed-badge');
+        if (reviewedBadge) {
+            const btn = document.createElement('button');
+            btn.className = 'show-tab show-tab-accent';
+            btn.id = 'tab-write';
+            btn.innerHTML = '<i class="ti ti-pencil" aria-hidden="true"></i> Write a Review';
+            btn.addEventListener('click', () => switchShowTab('write'));
+            reviewedBadge.replaceWith(btn);
+        }
+
+        // Show empty state if no reviews remain
+        const list = document.querySelector('#panel-reviews .reviews-layout');
+        if (list && !list.querySelector('.review-card')) {
+            list.innerHTML = `
+                <div class="reviews-empty">
+                    <i class="ti ti-message-off reviews-empty-icon" aria-hidden="true"></i>
+                    <h3>No reviews yet</h3>
+                    <p>Be the first to share your thoughts.</p>
+                </div>`;
+        }
     }
 }
 
@@ -499,25 +538,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Paint stars with partial fill based on decimal value using CSS clip-path.
+    // Paint stars using lit/lit-partial classes — simple and bulletproof
     function paintStarsFill(container, val) {
         if (!container) return;
-        container.querySelectorAll('.wr-star').forEach(btn => {
-            const v    = parseInt(btn.dataset.val);
-            const icon = btn.querySelector('i');
-            if (v < Math.ceil(val)) {
-                // fully filled stars to the left
-                icon.style.setProperty('--fill', '100%');
-                btn.classList.add('active');
-            } else if (v === Math.ceil(val)) {
-                // the partial star — fill % based on decimal portion
-                const portion = val % 1 === 0 ? 100 : Math.round((val % 1) * 100);
-                icon.style.setProperty('--fill', portion + '%');
-                btn.classList.add('active');
-            } else {
-                // empty stars to the right
-                icon.style.setProperty('--fill', '0%');
-                btn.classList.remove('active');
+        container.querySelectorAll('.wr-star, .wr-cat-star').forEach(btn => {
+            const v = parseInt(btn.dataset.val);
+            btn.classList.remove('lit', 'lit-partial');
+            if (v <= Math.floor(val)) {
+                btn.classList.add('lit');
+            } else if (v === Math.ceil(val) && val % 1 > 0) {
+                btn.classList.add('lit-partial');
             }
         });
     }
@@ -664,13 +694,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const v = parseFloat(scoreInp.value);
                 if (isNaN(v) || scoreInp.value === '') {
                     setCatRating(cat.id, 0);
-                    paintCatStars(starsWrap, 0, false);
+                    paintStarsFill(starsWrap, 0);
                     return;
                 }
                 const clamped = Math.min(10, Math.max(1, Math.round(v * 10) / 10));
                 setCatRating(cat.id, clamped);
-                paintCatStars(starsWrap, clamped, false);
-                // Don't overwrite scoreInp.value mid-typing
+                paintStarsFill(starsWrap, clamped);
             });
 
             for (let i = 1; i <= 10; i++) {
@@ -797,7 +826,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 'X-CSRF-TOKEN': csrf,
                 'Accept': 'application/json',
             },
-            body: JSON.stringify({ rating, body: body || null, categories, is_detailed: WR.mode === 'detailed' }),
+            body: JSON.stringify({ rating, body: body || null, categories, is_detailed: WR.mode === 'detailed', game_name: gameName }),
         })
         .then(r => r.json())
         .then(data => {
