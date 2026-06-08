@@ -505,7 +505,7 @@
                     <div class="review-categories-grid">
                         @foreach($parsedCats as $cat)
                         @php $pct = isset($cat['rating']) ? min(($cat['rating'] / 10) * 100, 100) : 0; @endphp
-                        <div class="review-cat-item">
+                        <div class="review-cat-item {{ !empty($cat['note']) ? 'review-cat-item--has-note' : '' }}">
                             <div class="review-cat-header">
                                 <span class="review-cat-name">{{ $cat['name'] ?? 'Category' }}</span>
                                 <span class="review-cat-score">{{ number_format($cat['rating'] ?? 0, 1) }}</span>
@@ -514,7 +514,14 @@
                                 <div class="review-cat-bar-fill" style="width: {{ $pct }}%"></div>
                             </div>
                             @if(!empty($cat['note']))
-                            <p class="review-cat-note">{{ $cat['note'] }}</p>
+                            <details class="review-cat-note-details">
+                                <summary class="review-cat-note-chip">
+                                    <i class="ti ti-message-2" aria-hidden="true"></i>
+                                    <span>Note</span>
+                                    <i class="ti ti-chevron-down review-cat-note-chevron" aria-hidden="true"></i>
+                                </summary>
+                                <p class="review-cat-note">{{ $cat['note'] }}</p>
+                            </details>
                             @endif
                         </div>
                         @endforeach
