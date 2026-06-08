@@ -2710,7 +2710,7 @@ footer{
 /* ── Category rows ── */
 .wr-category-row {
     display: grid;
-    grid-template-columns: 140px 1fr auto;
+    grid-template-columns: 140px 1fr auto auto;
     align-items: center;
     gap: .6rem;
     margin-bottom: .75rem;
@@ -2901,4 +2901,51 @@ footer{
     border: 1px solid var(--border);
     border-radius: 99px;
     padding: .15rem .5rem;
+}
+
+/* ── Category note toggle & textarea ── */
+.wr-cat-note-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    padding: .2rem;
+    border-radius: 4px;
+    font-size: 1rem;
+    line-height: 1;
+    transition: color .15s;
+    flex-shrink: 0;
+}
+.wr-cat-note-toggle:hover,
+.wr-cat-note-toggle.active {
+    color: var(--accent2);
+}
+
+.wr-cat-note-wrap {
+    padding: 0 0 .5rem 0;
+}
+
+.wr-cat-note-area {
+    display: none;
+    width: 100%;
+    box-sizing: border-box;
+    resize: vertical;
+    min-height: 60px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg3);
+    color: var(--text);
+    padding: .5rem .75rem;
+    font-size: .85rem;
+    font-family: 'DM Sans', sans-serif;
+    line-height: 1.6;
+    outline: none;
+    margin-top: .3rem;
+    transition: border-color .2s;
+}
+.wr-cat-note-area:focus {
+    border-color: var(--accent);
+}
+.wr-cat-note-area::placeholder {
+    color: var(--muted);
 }

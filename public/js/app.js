@@ -522,7 +522,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Attach precision star listeners to a star row container.
     // onCommit(val) called on click, onPreview(val) on move, onReset() on leave.
     function initPrecisionStars(container, onCommit, onPreview, onReset) {
-        container.querySelectorAll('.wr-star').forEach(btn => {
+        container.querySelectorAll('.wr-star, .wr-cat-star').forEach(btn => {
             btn.addEventListener('mousemove', e => {
                 const val = ratingFromEvent(e, btn);
                 onPreview(val);
@@ -630,7 +630,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* ── Category helpers ── */
     function addCategory(name, rating) {
-        WR.categories.push({ id: WR.nextCatId++, name: name || '', rating: rating || 0 });
+        WR.categories.push({ id: WR.nextCatId++, name: name || '', rating: rating || 0, note: '' });
     }
 
     window.wrAddCategory = function () {
@@ -736,12 +736,48 @@ document.addEventListener('DOMContentLoaded', () => {
             rm.innerHTML = '<i class="ti ti-x" aria-hidden="true"></i>';
             rm.addEventListener('click', () => removeCategory(cat.id));
 
+            // Note toggle button
+            const noteToggle = document.createElement('button');
+            noteToggle.type = 'button';
+            noteToggle.className = 'wr-cat-note-toggle';
+            noteToggle.setAttribute('aria-label', 'Add a note');
+            noteToggle.title = 'Add a note';
+            noteToggle.innerHTML = '<i class="ti ti-notes" aria-hidden="true"></i>';
+
+            // Note textarea (hidden by default, shown if already has text)
+            const noteArea = document.createElement('textarea');
+            noteArea.className = 'wr-cat-note-area';
+            noteArea.placeholder = 'Optional note for this category…';
+            noteArea.maxLength = 500;
+            noteArea.value = cat.note || '';
+            noteArea.style.display = cat.note ? 'block' : 'none';
+            noteToggle.classList.toggle('active', !!cat.note);
+
+            noteToggle.addEventListener('click', () => {
+                const isOpen = noteArea.style.display === 'block';
+                noteArea.style.display = isOpen ? 'none' : 'block';
+                noteToggle.classList.toggle('active', !isOpen);
+                if (!isOpen) noteArea.focus();
+            });
+
+            noteArea.addEventListener('input', () => {
+                const c = WR.categories.find(c => c.id === cat.id);
+                if (c) c.note = noteArea.value;
+            });
+
             widget.appendChild(starsWrap);
             widget.appendChild(scoreInp);
             row.appendChild(inp);
             row.appendChild(widget);
+            row.appendChild(noteToggle);
             row.appendChild(rm);
             container.appendChild(row);
+
+            // Note area sits below the row, full width
+            const noteWrap = document.createElement('div');
+            noteWrap.className = 'wr-cat-note-wrap';
+            noteWrap.appendChild(noteArea);
+            container.appendChild(noteWrap);
         });
     }
 
@@ -772,7 +808,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (WR.autoAvg) {
             WR.overallRating = 0;
             syncInput('overall', 0);
-            paintStars('wr-overall-stars', 0, false);
+            const overallContainer = document.getElementById('wr-overall-stars');
+        if (overallContainer) paintStarsFill(overallContainer, 0);
         }
         updateDetailedScore();
     };
@@ -809,7 +846,7 @@ document.addEventListener('DOMContentLoaded', () => {
             body       = document.getElementById('wr-detailed-body').value.trim();
             categories = WR.categories
                 .filter(c => c.name.trim() && c.rating > 0)
-                .map(c => ({ name: c.name.trim(), rating: c.rating }));
+                .map(c => ({ name: c.name.trim(), rating: Math.round(c.rating), note: c.note?.trim() || null }));
         }
 
         if (body && body.length < 10) { wrShowMsg('Description must be at least 10 characters (or leave it empty).', true); return; }
