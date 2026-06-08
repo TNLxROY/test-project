@@ -406,18 +406,33 @@
 <div id="panel-reviews" style="display:none">
     <div class="reviews-layout">
 
-        {{-- Review sub-tabs --}}
+        {{-- Review sub-tabs + FS Score --}}
         @if(count($reviews) > 0)
-        <div class="review-subtabs">
-            <button class="review-subtab active" id="rtab-all" onclick="switchReviewTab('all')">
-                All <span class="review-subtab-count">{{ count($reviews) }}</span>
-            </button>
-            <button class="review-subtab" id="rtab-simple" onclick="switchReviewTab('simple')">
-                Simple <span class="review-subtab-count">{{ $reviews->where('is_detailed', false)->count() }}</span>
-            </button>
-            <button class="review-subtab" id="rtab-detailed" onclick="switchReviewTab('detailed')">
-                Detailed <span class="review-subtab-count">{{ $reviews->where('is_detailed', true)->count() }}</span>
-            </button>
+        @php
+            $ratingsWithScore = $reviews->filter(fn($r) => !is_null($r->rating));
+            $fsAvg = $ratingsWithScore->count()
+                ? round($ratingsWithScore->avg('rating'), 1)
+                : null;
+        @endphp
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+            <div class="review-subtabs">
+                <button class="review-subtab active" id="rtab-all" onclick="switchReviewTab('all')">
+                    All <span class="review-subtab-count">{{ count($reviews) }}</span>
+                </button>
+                <button class="review-subtab" id="rtab-simple" onclick="switchReviewTab('simple')">
+                    Simple <span class="review-subtab-count">{{ $reviews->where('is_detailed', false)->count() }}</span>
+                </button>
+                <button class="review-subtab" id="rtab-detailed" onclick="switchReviewTab('detailed')">
+                    Detailed <span class="review-subtab-count">{{ $reviews->where('is_detailed', true)->count() }}</span>
+                </button>
+            </div>
+            @if($fsAvg !== null)
+            <div class="fs-score-widget">
+                <div class="fs-score-label">Fact.Speaker Score</div>
+                <div class="fs-score-value">{{ number_format($fsAvg, 1) }}<span class="fs-score-denom">/10</span></div>
+                <div class="fs-score-sub">Based on {{ $ratingsWithScore->count() }} {{ Str::plural('review', $ratingsWithScore->count()) }}</div>
+            </div>
+            @endif
         </div>
         @endif
 
@@ -562,7 +577,12 @@
                 </div>
                 @endif
                 @if($review->body)
-                <p class="review-body">{{ $review->body }}</p>
+                <div class="review-detailed-desc">
+                    <div class="review-detailed-desc-label">
+                        <i class="ti ti-quote" aria-hidden="true"></i> Overall thoughts
+                    </div>
+                    <p class="review-body">{{ $review->body }}</p>
+                </div>
                 @endif
                 @endif
 

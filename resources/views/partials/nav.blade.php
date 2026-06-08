@@ -39,13 +39,16 @@
             <i class="ti ti-device-gamepad-2" aria-hidden="true"></i> Browse Games
         </a>
         <a href="{{ route('games.index') }}" class="dropdown-item">
-            <i class="ti ti-device-gamepad-2" aria-hidden="true"></i> Browse Games
+            <i class="ti ti-binary-tree-2" aria-hidden="true"></i> Skill Tree
         </a>
         <a href="{{ route('games.index') }}" class="dropdown-item">
-            <i class="ti ti-device-gamepad-2" aria-hidden="true"></i> Browse Games
+            <i class="ti ti-sword" aria-hidden="true"></i> Challenges
         </a>
         <a href="{{ route('games.index') }}" class="dropdown-item">
-            <i class="ti ti-device-gamepad-2" aria-hidden="true"></i> Browse Games
+            <i class="ti ti-album" aria-hidden="true"></i> Collections
+        </a>
+        <a href="{{ route('games.index') }}" class="dropdown-item">
+            <i class="ti ti-crown" aria-hidden="true"></i> Membership
         </a>
         <hr class="dropdown-divider">
         <button class="dropdown-item danger" data-action="logout">

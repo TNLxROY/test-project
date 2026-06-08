@@ -1343,6 +1343,12 @@ footer{
     column-gap: .75rem;
 }
 
+@media (max-width: 925px) {
+    #review-group-all {
+        columns: 1;
+    }
+}
+
 /* ── Review sub-tabs ────────────────────────────────── */
 .review-subtabs {
     display: flex;
@@ -1416,6 +1422,10 @@ footer{
 }
 .review-card--detailed:hover {
     border-color: rgba(var(--accent-rgb, 232,25,44), .35);
+}
+
+.review-card:not(.review-card--detailed) .review-overall-hero {
+    margin-bottom: 1rem;
 }
 
 .review-header {
@@ -3272,4 +3282,41 @@ footer{
 }
 .wr-cat-note-area::placeholder {
     color: var(--muted);
+}
+
+.fs-score-widget {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: .6rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.fs-score-label {
+    font-size: .7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+}
+.fs-score-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #f5a623;
+    line-height: 1;
+}
+.fs-score-denom {
+    font-size: .8rem;
+    font-weight: 400;
+    color: var(--muted);
+}
+.fs-score-sub {
+    font-size: .72rem;
+    color: var(--muted);
+}
+
+.fs-score-widget {
+    margin-top: -8px;
 }
