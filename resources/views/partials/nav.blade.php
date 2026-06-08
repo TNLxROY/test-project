@@ -6,7 +6,6 @@
         <a href="/games">Games</a>
         <a style="color:var(--muted)">News</a>
         <a href="{{ route('users.index') }}">Users</a>
-        <a style="color:var(--muted)">Membership</a>
     </div>
     <div class="nav-right">
         <button class="hamburger" id="hamburger" aria-label="Toggle menu">
@@ -35,6 +34,15 @@
         </a>
         <a href="{{ route('achievements.index') }}" class="dropdown-item">
             <i class="ti ti-trophy" aria-hidden="true"></i> Achievements
+        </a>
+        <a href="{{ route('games.index') }}" class="dropdown-item">
+            <i class="ti ti-device-gamepad-2" aria-hidden="true"></i> Browse Games
+        </a>
+        <a href="{{ route('games.index') }}" class="dropdown-item">
+            <i class="ti ti-device-gamepad-2" aria-hidden="true"></i> Browse Games
+        </a>
+        <a href="{{ route('games.index') }}" class="dropdown-item">
+            <i class="ti ti-device-gamepad-2" aria-hidden="true"></i> Browse Games
         </a>
         <a href="{{ route('games.index') }}" class="dropdown-item">
             <i class="ti ti-device-gamepad-2" aria-hidden="true"></i> Browse Games

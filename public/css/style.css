@@ -1330,12 +1330,17 @@ footer{
 
 /* ── Reviews layout ─────────────────────────────────── */
 .reviews-layout {
-    max-width: 900px;
+    max-width: 1100px;
     margin: 0 auto;
     padding: 1.5rem 2rem 4rem;
     display: flex;
     flex-direction: column;
     gap: 1rem;
+}
+
+#review-group-all {
+    columns: 2;
+    column-gap: .75rem;
 }
 
 /* ── Review sub-tabs ────────────────────────────────── */
@@ -1399,6 +1404,8 @@ footer{
     border-radius: 16px;
     padding: 1.25rem 1.5rem;
     transition: border-color .2s, box-shadow .2s;
+    break-inside: avoid;
+    margin-bottom: .75rem;
 }
 .review-card:hover {
     border-color: rgba(255,255,255,.12);
