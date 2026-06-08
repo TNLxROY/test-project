@@ -439,7 +439,13 @@
                     $decoded = is_string($rawCats) ? json_decode($rawCats, true) : (array) $rawCats;
                     $parsedCats = is_array($decoded) ? array_values(array_filter($decoded, fn($c) => !empty($c['name']))) : [];
                 }
-                $isDetailed = $review->is_detailed;
+                $isDetailed     = $review->is_detailed;
+                $reviewLikes    = $review->votes->where('vote', 'like')->count();
+                $reviewDislikes = $review->votes->where('vote', 'dislike')->count();
+                $userVote       = auth()->check()
+                    ? optional($review->votes->where('user_id', auth()->id())->first())->vote
+                    : null;
+                $isOwnReview    = auth()->check() && auth()->id() === $review->user_id;
             @endphp
             <div class="review-card {{ $isDetailed ? 'review-card--detailed' : '' }}"
                  id="review-{{ $review->id }}"
@@ -505,7 +511,7 @@
                     <div class="review-categories-grid">
                         @foreach($parsedCats as $cat)
                         @php $pct = isset($cat['rating']) ? min(($cat['rating'] / 10) * 100, 100) : 0; @endphp
-                        <div class="review-cat-item {{ !empty($cat['note']) ? 'review-cat-item--has-note' : '' }}">
+                        <div class="review-cat-item">
                             <div class="review-cat-header">
                                 <span class="review-cat-name">{{ $cat['name'] ?? 'Category' }}</span>
                                 <span class="review-cat-score">{{ number_format($cat['rating'] ?? 0, 1) }}</span>
@@ -514,14 +520,7 @@
                                 <div class="review-cat-bar-fill" style="width: {{ $pct }}%"></div>
                             </div>
                             @if(!empty($cat['note']))
-                            <details class="review-cat-note-details">
-                                <summary class="review-cat-note-chip">
-                                    <i class="ti ti-message-2" aria-hidden="true"></i>
-                                    <span>Note</span>
-                                    <i class="ti ti-chevron-down review-cat-note-chevron" aria-hidden="true"></i>
-                                </summary>
-                                <p class="review-cat-note">{{ $cat['note'] }}</p>
-                            </details>
+                            <p class="review-cat-note">{{ $cat['note'] }}</p>
                             @endif
                         </div>
                         @endforeach
@@ -566,6 +565,38 @@
                 <p class="review-body">{{ $review->body }}</p>
                 @endif
                 @endif
+
+                {{-- ── VOTE BAR ── --}}
+                <div class="review-vote-bar">
+                    @if(!$isOwnReview)
+                    <button
+                        class="review-vote-btn review-vote-like {{ $userVote === 'like' ? 'active' : '' }}"
+                        @auth onclick="voteReview({{ $review->id }}, 'like', this)" @endauth
+                        @guest onclick="openModal('login')" @endguest
+                        aria-label="Like this review">
+                        <i class="ti ti-thumb-up" aria-hidden="true"></i>
+                        <span class="review-vote-count" data-type="likes">{{ $reviewLikes }}</span>
+                    </button>
+                    <div class="review-vote-divider"></div>
+                    <button
+                        class="review-vote-btn review-vote-dislike {{ $userVote === 'dislike' ? 'active' : '' }}"
+                        @auth onclick="voteReview({{ $review->id }}, 'dislike', this)" @endauth
+                        @guest onclick="openModal('login')" @endguest
+                        aria-label="Dislike this review">
+                        <i class="ti ti-thumb-down" aria-hidden="true"></i>
+                        <span class="review-vote-count" data-type="dislikes">{{ $reviewDislikes }}</span>
+                    </button>
+                    @else
+                    <div class="review-vote-own">
+                        <span class="review-vote-count-readonly">
+                            <i class="ti ti-thumbs-up" aria-hidden="true"></i> {{ $reviewLikes }}
+                        </span>
+                        <span class="review-vote-count-readonly">
+                            <i class="ti ti-thumbs-down" aria-hidden="true"></i> {{ $reviewDislikes }}
+                        </span>
+                    </div>
+                    @endif
+                </div>
 
             </div>
             @endforeach

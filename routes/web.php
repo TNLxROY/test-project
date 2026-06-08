@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ReviewVoteController;
 
 Route::get('/', function () {
     return view('home');
@@ -54,6 +55,9 @@ Route::middleware('auth')->group(function () {
 Route::get('/games', [GameController::class, 'index'])->name('games.index');
 Route::get('/games/search', [GameController::class, 'search'])->name('games.search');
 Route::get('/games/{id}', [GameController::class, 'show'])->name('games.show');
+
+Route::post('/reviews/{review}/vote', [ReviewVoteController::class, 'store'])
+    ->name('reviews.vote');
 
 Route::middleware('auth')->group(function () {
     Route::post('/games/{gameId}/reviews',           [App\Http\Controllers\ReviewController::class, 'store']);

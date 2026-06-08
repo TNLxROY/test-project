@@ -184,7 +184,7 @@ class GameController extends Controller
 
         // reviews
         $reviews = \App\Models\Review::where('game_id', $id)
-            ->with('user')
+            ->with(['user', 'votes'])
             ->latest()
             ->get();
 

@@ -891,3 +891,49 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 })();
+
+// -------------------------
+// REVIEW VOTES
+// -------------------------
+window.voteReview = async function(reviewId, vote, clickedBtn) {
+    const card      = clickedBtn.closest('.review-vote-bar');
+    const likeBtn   = card.querySelector('.review-vote-like');
+    const dislikeBtn= card.querySelector('.review-vote-dislike');
+
+    // Optimistic disable while request is in flight
+    likeBtn.classList.add('loading');
+    dislikeBtn.classList.add('loading');
+
+    // Pop animation on the clicked button
+    clickedBtn.classList.remove('pop');
+    void clickedBtn.offsetWidth; // reflow to restart animation
+    clickedBtn.classList.add('pop');
+    setTimeout(() => clickedBtn.classList.remove('pop'), 400);
+
+    try {
+        const res  = await authFetch(`/reviews/${reviewId}/vote`, {
+            method: 'POST',
+            body: JSON.stringify({ vote }),
+        });
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+            showNotif(data.message || 'Could not register vote.');
+            return;
+        }
+
+        // Update counts
+        likeBtn.querySelector('[data-type="likes"]').textContent     = data.likes;
+        dislikeBtn.querySelector('[data-type="dislikes"]').textContent = data.dislikes;
+
+        // Update active state
+        likeBtn.classList.toggle('active',    data.user_vote === 'like');
+        dislikeBtn.classList.toggle('active', data.user_vote === 'dislike');
+
+    } catch (err) {
+        showNotif('Network error. Please try again.');
+    } finally {
+        likeBtn.classList.remove('loading');
+        dislikeBtn.classList.remove('loading');
+    }
+};
