@@ -59,7 +59,7 @@
                                 <div class="meta-item full">
                                     <span class="meta-label">Developer</span>
                                     <span class="meta-value">
-                                        {{ implode(', ', $game['developers'] ?? []) ?: 'N/A' }}
+                                        {{ implode(', ', array_column($game['developers'] ?? [], 'name')) ?: 'N/A' }}
                                     </span>
                                 </div>
                             </div>

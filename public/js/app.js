@@ -846,7 +846,7 @@ document.addEventListener('DOMContentLoaded', () => {
             body       = document.getElementById('wr-detailed-body').value.trim();
             categories = WR.categories
                 .filter(c => c.name.trim() && c.rating > 0)
-                .map(c => ({ name: c.name.trim(), rating: Math.round(c.rating), note: c.note?.trim() || null }));
+                .map(c => ({ name: c.name.trim(), rating: Math.round(c.rating * 10) / 10, note: c.note?.trim() || null }));
         }
 
         if (body && body.length < 10) { wrShowMsg('Description must be at least 10 characters (or leave it empty).', true); return; }

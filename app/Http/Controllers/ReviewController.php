@@ -29,7 +29,7 @@ class ReviewController extends Controller
             'is_detailed' => ['boolean'],
             'categories'  => ['nullable', 'array'],
             'categories.*.name'   => ['required_with:categories', 'string', 'max:40'],
-            'categories.*.rating' => ['required_with:categories', 'integer', 'min:1', 'max:10'],
+            'categories.*.rating' => ['required_with:categories', 'numeric', 'min:1', 'max:10'],
         ]);
 
         $review = Review::create([

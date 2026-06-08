@@ -535,20 +535,24 @@
                 @else
                 {{-- ── SIMPLE REVIEW DISPLAY ── --}}
                 @if($review->rating)
-                <div class="review-rating-row">
-                    <div class="review-stars">
-                        @for($s = 1; $s <= 10; $s++)
-                            @php
-                                $starClass = 'review-star';
-                                if ($s <= floor($review->rating)) $starClass .= ' lit';
-                                elseif ($s == ceil($review->rating) && fmod($review->rating, 1) > 0) $starClass .= ' lit-partial';
-                            @endphp
-                            <span class="{{ $starClass }}">
-                                <i class="ti ti-star" aria-hidden="true"></i>
-                            </span>
-                        @endfor
+                <div class="review-overall-hero">
+                    <div class="review-overall-score-wrap">
+                        <span class="review-overall-num">{{ number_format($review->rating, 1) }}</span>
+                        <span class="review-overall-denom">/10</span>
                     </div>
-                    <span class="review-score">{{ $review->rating }}</span>
+                    <div class="review-overall-right">
+                        <div class="review-overall-label">Score</div>
+                        <div class="review-stars review-stars--lg">
+                            @for($s = 1; $s <= 10; $s++)
+                                @php
+                                    $starClass = 'review-star';
+                                    if ($s <= floor($review->rating)) $starClass .= ' lit';
+                                    elseif ($s == ceil($review->rating) && fmod($review->rating, 1) > 0) $starClass .= ' lit-partial';
+                                @endphp
+                                <span class="{{ $starClass }}"><i class="ti ti-star" aria-hidden="true"></i></span>
+                            @endfor
+                        </div>
+                    </div>
                 </div>
                 @endif
                 @if($review->body)
