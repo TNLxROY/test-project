@@ -1704,16 +1704,24 @@ footer{
 .review-vote-own {
     display: flex;
     align-items: center;
-    gap: .9rem;
 }
 .review-vote-count-readonly {
     display: inline-flex;
     align-items: center;
-    gap: .35rem;
-    font-size: .78rem;
+    gap: .4rem;
+    font-size: .82rem;
     color: var(--muted);
+    padding: .35rem .75rem;
 }
 
+.review-vote-count-readonly i {
+    font-size: 1.05rem;
+    width: 1.05rem;
+    height: 1.05rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
 
 /* ── Write review ────────────────────────────────────── */
 .write-review-card { max-width: 100%; }

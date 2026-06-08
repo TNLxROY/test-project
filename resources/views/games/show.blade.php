@@ -589,10 +589,10 @@
                     @else
                     <div class="review-vote-own">
                         <span class="review-vote-count-readonly">
-                            <i class="ti ti-thumbs-up" aria-hidden="true"></i> {{ $reviewLikes }}
+                            <i class="ti ti-thumb-up" aria-hidden="true"></i> {{ $reviewLikes }}
                         </span>
                         <span class="review-vote-count-readonly">
-                            <i class="ti ti-thumbs-down" aria-hidden="true"></i> {{ $reviewDislikes }}
+                            <i class="ti ti-thumb-down" aria-hidden="true"></i> {{ $reviewDislikes }}
                         </span>
                     </div>
                     @endif
