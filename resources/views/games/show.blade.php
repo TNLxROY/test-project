@@ -33,6 +33,9 @@
                 <i class="ti ti-message-circle" aria-hidden="true"></i> Reviews
                 <span class="review-count-badge" id="review-count-badge">{{ count($reviews) }}</span>
             </button>
+            {{-- Hidden inputs for sub-tab counts --}}
+            <span id="reviews-count-simple" style="display:none">{{ $reviews->where('is_detailed', false)->count() }}</span>
+            <span id="reviews-count-detailed" style="display:none">{{ $reviews->where('is_detailed', true)->count() }}</span>
             @auth
                 @if(!$userReview)
                     <button class="show-tab show-tab-accent" id="tab-write" onclick="switchShowTab('write')">
@@ -402,6 +405,22 @@
 {{-- ── REVIEWS PANEL ── --}}
 <div id="panel-reviews" style="display:none">
     <div class="reviews-layout">
+
+        {{-- Review sub-tabs --}}
+        @if(count($reviews) > 0)
+        <div class="review-subtabs">
+            <button class="review-subtab active" id="rtab-all" onclick="switchReviewTab('all')">
+                All <span class="review-subtab-count">{{ count($reviews) }}</span>
+            </button>
+            <button class="review-subtab" id="rtab-simple" onclick="switchReviewTab('simple')">
+                Simple <span class="review-subtab-count">{{ $reviews->where('is_detailed', false)->count() }}</span>
+            </button>
+            <button class="review-subtab" id="rtab-detailed" onclick="switchReviewTab('detailed')">
+                Detailed <span class="review-subtab-count">{{ $reviews->where('is_detailed', true)->count() }}</span>
+            </button>
+        </div>
+        @endif
+
         @if(count($reviews) === 0)
             <div class="reviews-empty">
                 <i class="ti ti-message-off reviews-empty-icon" aria-hidden="true"></i>
@@ -409,16 +428,41 @@
                 <p>Be the first to share your thoughts on {{ $game['name'] }}.</p>
             </div>
         @else
+            {{-- Wrapper for each filter group --}}
+            <div id="review-group-all">
             @foreach($reviews as $review)
-            <div class="review-card" id="review-{{ $review->id }}">
+            @php
+                // Support both column names: 'categories' or 'category_scores'
+                $rawCats = $review->categories ?? $review->category_scores ?? null;
+                $parsedCats = [];
+                if ($rawCats) {
+                    $decoded = is_string($rawCats) ? json_decode($rawCats, true) : (array) $rawCats;
+                    $parsedCats = is_array($decoded) ? array_values(array_filter($decoded, fn($c) => !empty($c['name']))) : [];
+                }
+                $isDetailed = $review->is_detailed;
+            @endphp
+            <div class="review-card {{ $isDetailed ? 'review-card--detailed' : '' }}"
+                 id="review-{{ $review->id }}"
+                 data-type="{{ $review->is_detailed ? 'detailed' : 'simple' }}">
+
+                {{-- Header --}}
                 <div class="review-header">
                     <div class="review-avatar">
                         {{ strtoupper(substr($review->user->name, 0, 1)) }}
                     </div>
-                    <div>
+                    <div class="review-header-meta">
                         <div class="review-author">{{ $review->user->name }}</div>
                         <div class="review-date">{{ $review->created_at->format('M j, Y') }}</div>
                     </div>
+                    @if($review->is_detailed)
+                        <span class="review-type-badge review-type-badge--detailed">
+                            <i class="ti ti-list-details" aria-hidden="true"></i> Detailed
+                        </span>
+                    @else
+                        <span class="review-type-badge review-type-badge--simple">
+                            <i class="ti ti-star" aria-hidden="true"></i> Simple
+                        </span>
+                    @endif
                     @auth
                         @if(Auth::id() === $review->user_id)
                         <button class="review-delete-btn"
@@ -428,32 +472,105 @@
                         @endif
                     @endauth
                 </div>
-                {{-- Rating display --}}
+
+                @if($isDetailed)
+                {{-- ── DETAILED REVIEW DISPLAY ── --}}
+                <div class="review-detailed-body">
+
+                    {{-- Overall score hero --}}
+                    @if($review->rating)
+                    <div class="review-overall-hero">
+                        <div class="review-overall-score-wrap">
+                            <span class="review-overall-num">{{ number_format($review->rating, 1) }}</span>
+                            <span class="review-overall-denom">/10</span>
+                        </div>
+                        <div class="review-overall-right">
+                            <div class="review-overall-label">Overall Score</div>
+                            <div class="review-stars review-stars--lg">
+                                @for($s = 1; $s <= 10; $s++)
+                                    @php
+                                        $sc = 'review-star';
+                                        if ($s <= floor($review->rating)) $sc .= ' lit';
+                                        elseif ($s == ceil($review->rating) && fmod($review->rating, 1) > 0) $sc .= ' lit-partial';
+                                    @endphp
+                                    <span class="{{ $sc }}"><i class="ti ti-star" aria-hidden="true"></i></span>
+                                @endfor
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
+                    {{-- Category breakdown --}}
+                    @if(!empty($parsedCats))
+                    <div class="review-categories-grid">
+                        @foreach($parsedCats as $cat)
+                        @php $pct = isset($cat['rating']) ? min(($cat['rating'] / 10) * 100, 100) : 0; @endphp
+                        <div class="review-cat-item">
+                            <div class="review-cat-header">
+                                <span class="review-cat-name">{{ $cat['name'] ?? 'Category' }}</span>
+                                <span class="review-cat-score">{{ number_format($cat['rating'] ?? 0, 1) }}</span>
+                            </div>
+                            <div class="review-cat-bar-track">
+                                <div class="review-cat-bar-fill" style="width: {{ $pct }}%"></div>
+                            </div>
+                            @if(!empty($cat['note']))
+                            <p class="review-cat-note">{{ $cat['note'] }}</p>
+                            @endif
+                        </div>
+                        @endforeach
+                    </div>
+                    @endif
+
+                    {{-- Overall description --}}
+                    @if($review->body)
+                    <div class="review-detailed-desc">
+                        <div class="review-detailed-desc-label">
+                            <i class="ti ti-quote" aria-hidden="true"></i> Overall thoughts
+                        </div>
+                        <p class="review-body">{{ $review->body }}</p>
+                    </div>
+                    @endif
+                </div>
+
+                @else
+                {{-- ── SIMPLE REVIEW DISPLAY ── --}}
                 @if($review->rating)
                 <div class="review-rating-row">
                     <div class="review-stars">
                         @for($s = 1; $s <= 10; $s++)
                             @php
-                            $starClass = 'review-star';
-                            if ($s <= floor($review->rating)) $starClass .= ' lit';
-                            elseif ($s == ceil($review->rating) && fmod($review->rating, 1) > 0) $starClass .= ' lit-partial';
-                        @endphp
+                                $starClass = 'review-star';
+                                if ($s <= floor($review->rating)) $starClass .= ' lit';
+                                elseif ($s == ceil($review->rating) && fmod($review->rating, 1) > 0) $starClass .= ' lit-partial';
+                            @endphp
                             <span class="{{ $starClass }}">
                                 <i class="ti ti-star" aria-hidden="true"></i>
                             </span>
                         @endfor
                     </div>
                     <span class="review-score">{{ $review->rating }}</span>
-                    @if($review->is_detailed)
-                        <span class="review-detailed-badge">Detailed</span>
-                    @endif
                 </div>
                 @endif
                 @if($review->body)
                 <p class="review-body">{{ $review->body }}</p>
                 @endif
+                @endif
+
             </div>
             @endforeach
+            </div>
+
+            {{-- Empty states for filtered views --}}
+            <div id="review-empty-simple" class="reviews-empty" style="display:none">
+                <i class="ti ti-star-off reviews-empty-icon" aria-hidden="true"></i>
+                <h3>No simple reviews yet</h3>
+                <p>All reviews for this game are detailed.</p>
+            </div>
+            <div id="review-empty-detailed" class="reviews-empty" style="display:none">
+                <i class="ti ti-list-details reviews-empty-icon" aria-hidden="true"></i>
+                <h3>No detailed reviews yet</h3>
+                <p>No one has left a detailed breakdown for this game yet.</p>
+            </div>
         @endif
     </div>
 </div>
@@ -569,6 +686,33 @@
 </div>
 
 <script>
+window.switchReviewTab = function(type) {
+    // Update active tab button
+    ['all','simple','detailed'].forEach(t => {
+        const btn = document.getElementById('rtab-' + t);
+        if (btn) btn.classList.toggle('active', t === type);
+    });
+
+    const cards = document.querySelectorAll('#review-group-all .review-card');
+    let visibleCount = 0;
+    cards.forEach(card => {
+        const cardType = card.dataset.type;
+        const show = type === 'all' || cardType === type;
+        card.style.display = show ? '' : 'none';
+        if (show) visibleCount++;
+    });
+
+    // Show/hide empty states
+    document.getElementById('review-empty-simple')?.style && (
+        document.getElementById('review-empty-simple').style.display =
+            (type === 'simple' && visibleCount === 0) ? 'block' : 'none'
+    );
+    document.getElementById('review-empty-detailed')?.style && (
+        document.getElementById('review-empty-detailed').style.display =
+            (type === 'detailed' && visibleCount === 0) ? 'block' : 'none'
+    );
+};
+
 function toggleSysreq(header) {
     const item   = header.closest('.platform-item');
     const sysreq = item.querySelector('.sysreq');
