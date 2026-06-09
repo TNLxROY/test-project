@@ -31,12 +31,14 @@ class ReviewController extends Controller
             'categories.*.name'   => ['required_with:categories', 'string', 'max:40'],
             'categories.*.rating' => ['required_with:categories', 'numeric', 'min:1', 'max:10'],
             'categories.*.note'   => ['nullable', 'string', 'max:500'],
+            'game_cover'  => ['nullable', 'string', 'max:500'],
         ]);
 
         $review = Review::create([
             'user_id'     => Auth::id(),
             'game_id'     => $gameId,
             'game_name'   => $request->input('game_name'),
+            'game_cover'  => $data['game_cover'] ?? null,
             'rating'      => $data['rating'],
             'body'        => $data['body'] ?? null,
             'is_detailed' => $data['is_detailed'] ?? false,

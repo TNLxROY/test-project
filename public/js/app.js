@@ -822,7 +822,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /* ── Submit ── */
-    window.wrSubmit = function (gameId, gameName) {
+    window.wrSubmit = function (gameId, gameName, gameCover) {
         const msgEl = document.getElementById('review-msg');
         msgEl.textContent = '';
         msgEl.style.display = 'none';
@@ -863,7 +863,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 'X-CSRF-TOKEN': csrf,
                 'Accept': 'application/json',
             },
-            body: JSON.stringify({ rating, body: body || null, categories, is_detailed: WR.mode === 'detailed', game_name: gameName }),
+            body: JSON.stringify({ rating, body: body || null, categories, is_detailed: WR.mode === 'detailed', game_name: gameName, game_cover: gameCover ?? null }),
         })
         .then(r => r.json())
         .then(data => {

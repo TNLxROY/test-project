@@ -738,7 +738,7 @@
             {{-- Submit --}}
             <div class="wr-footer">
                 <button class="btn btn-primary wr-submit" id="wr-submit"
-                    onclick="wrSubmit({{ $game['id'] }}, '{{ addslashes($game['name']) }}')">
+                    onclick="wrSubmit({{ $game['id'] }}, '{{ addslashes($game['name']) }}', '{{ addslashes($igdbCoverUrl ?? $game['background_image'] ?? '') }}')">
                     Post Review
                 </button>
                 <div class="auth-msg" id="review-msg"></div>

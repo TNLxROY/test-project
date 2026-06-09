@@ -10,6 +10,7 @@ class Review extends Model
         'user_id',
         'game_id',
         'game_name',
+        'game_cover',
         'body',
         'rating',
         'categories',
