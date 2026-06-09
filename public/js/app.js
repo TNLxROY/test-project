@@ -959,6 +959,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const panel = document.getElementById('panel-' + t);
             if (panel) panel.style.display = t === tab ? '' : 'none';
         });
+        // Tint cards when the reviews tab becomes visible
+        if (tab === 'reviews') setTimeout(tintReviewCards, 50);
     }
 
     // ── Shared fetch helper ───────────────────────────────────────────────
@@ -1394,6 +1396,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fav search input — debounce on typing
     document.getElementById('fav-search-input')?.addEventListener('input', favSearchDebounce);
+
+    // ── Cover art dominant-colour tint via Canvas ─────────────────────────
+    function tintReviewCards() {
+        document.querySelectorAll('.review-profile-card[data-cover]').forEach(card => {
+            if (card.dataset.tinted) return;
+            const coverUrl = card.dataset.cover;
+            if (!coverUrl) return;
+
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+
+            img.onload = () => {
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = canvas.height = 16;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, 16, 16);
+
+                    const { data } = ctx.getImageData(0, 0, 16, 16);
+                    let r = 0, g = 0, b = 0, count = 0;
+
+                    for (let i = 0; i < data.length; i += 4) {
+                        if (data[i + 3] < 128) continue;
+                        const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                        if (brightness < 20 || brightness > 235) continue;
+                        r += data[i]; g += data[i + 1]; b += data[i + 2];
+                        count++;
+                    }
+
+                    if (!count) return;
+
+                    r = Math.round(r / count);
+                    g = Math.round(g / count);
+                    b = Math.round(b / count);
+
+                    card.style.setProperty('--card-tint', `rgb(${r},${g},${b})`);
+                    card.style.borderLeftColor = `rgba(${r},${g},${b},0.45)`;
+                    card.style.borderLeftWidth = '3px';
+                    card.dataset.tinted = '1';
+                } catch (_) { /* CORS or security error — skip silently */ }
+            };
+
+            img.src = coverUrl;
+        });
+    }
+
+    // Run on load in case the reviews panel is already visible
+    tintReviewCards();
 
     // ── Delete review from profile page ──────────────────────────────────
     async function deleteProfileReview(reviewId, gameId) {

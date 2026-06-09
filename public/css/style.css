@@ -1493,14 +1493,13 @@ footer{
 }
 
 .review-delete-btn {
-    margin-left: auto;
     background: none;
     border: 1px solid transparent;
     color: var(--muted);
     border-radius: 8px;
-    padding: .3rem .45rem;
+    padding: .28rem .4rem;
     cursor: pointer;
-    font-size: .9rem;
+    font-size: .88rem;
     transition: all .2s;
     flex-shrink: 0;
 }
@@ -3350,25 +3349,57 @@ footer{
 }
 
 /* ── Review profile card — horizontal layout ── */
+/* ── Profile Review Cards ───────────────────────────────────────────────── */
+
 .review-profile-card {
-    display: flex;
-    flex-direction: row;
-    gap: 1.25rem;
-    align-items: stretch;
-    padding: 1rem 1.25rem;
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    padding: 0;
+    background: var(--bg3);
+    border: 1px solid var(--border);
 }
 
+/* Full-bleed tinted background layer — colour set by JS via --card-tint */
+.review-profile-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--card-tint, transparent);
+    opacity: 0.18;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Inner content sits above the tint */
+.review-profile-body {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: .55rem;
+    padding: .85rem 1rem;
+}
+
+/* ── Top row ──────────────────────────────────── */
+.review-profile-header {
+    display: flex;
+    align-items: flex-start;
+    gap: .65rem;
+}
+
+/* Small cover thumbnail */
 .review-profile-cover {
-    width: 90px;
-    min-width: 90px;
-    border-radius: 8px;
+    width: 40px;
+    min-width: 40px;
+    height: 52px;
+    flex-shrink: 0;
+    border-radius: 6px;
     overflow: hidden;
     background: var(--bg4);
-    border: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: center;
-    align-self: stretch;
 }
 
 .review-profile-cover img {
@@ -3380,26 +3411,13 @@ footer{
 
 .review-profile-cover-placeholder {
     color: var(--muted);
-    font-size: 1.6rem;
+    font-size: 1.2rem;
 }
 
-.review-profile-body {
+/* Title + date */
+.review-profile-meta {
     flex: 1;
     min-width: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: .45rem;
-}
-
-.review-profile-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: .5rem;
-}
-
-.review-profile-meta {
     display: flex;
     flex-direction: column;
     gap: .2rem;
@@ -3408,50 +3426,86 @@ footer{
 .review-profile-game-link {
     font-family: 'Syne', sans-serif;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: .97rem;
     color: var(--text);
     text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: .4rem;
-    transition: color .15s;
     line-height: 1.2;
+    transition: color .15s;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .review-profile-game-link:hover {
     color: var(--accent2);
 }
-.review-profile-game-link i {
-    color: var(--accent);
-    font-size: .9rem;
-    flex-shrink: 0;
+
+.review-profile-sub {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    flex-wrap: wrap;
 }
 
 .review-profile-date {
-    font-size: .75rem;
+    font-size: .71rem;
     color: var(--muted);
 }
 
-/* Category breakdown rows */
+/* Right cluster: score pill + trash */
+.review-profile-actions {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    flex-shrink: 0;
+}
+
+/* Score pill */
+.review-profile-score-pill {
+    display: flex;
+    align-items: baseline;
+    gap: .15rem;
+    background: rgba(245, 166, 35, .12);
+    border: 1px solid rgba(245, 166, 35, .28);
+    border-radius: 10px;
+    padding: .22rem .6rem;
+}
+
+.review-profile-score-big {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #f5a623;
+    line-height: 1;
+}
+
+.review-profile-score-denom {
+    font-size: .7rem;
+    color: var(--muted);
+}
+
+/* Category chips */
 .review-profile-cats {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     gap: .3rem;
-    border-top: 1px solid var(--border);
-    padding-top: .6rem;
-    margin-top: .1rem;
+    padding-top: .45rem;
+    border-top: 1px solid rgba(255, 255, 255, .07);
 }
 
 .review-profile-cat-row {
-    display: flex;
-    align-items: baseline;
-    gap: .5rem;
-    font-size: .82rem;
+    display: inline-flex;
+    align-items: center;
+    gap: .28rem;
+    background: rgba(255, 255, 255, .05);
+    border: 1px solid rgba(255, 255, 255, .09);
+    border-radius: 8px;
+    padding: .16rem .5rem;
+    font-size: .74rem;
 }
 
 .review-profile-cat-name {
     color: var(--muted);
-    min-width: 90px;
-    flex-shrink: 0;
 }
 
 .review-profile-cat-rating {
