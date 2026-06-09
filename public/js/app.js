@@ -954,7 +954,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Tab switching ─────────────────────────────────────────────────────
     function switchProfileTab(tab) {
-        ['about', 'settings'].forEach(t => {
+        ['about', 'reviews', 'settings'].forEach(t => {
             document.getElementById('tab-' + t)?.classList.toggle('active', t === tab);
             const panel = document.getElementById('panel-' + t);
             if (panel) panel.style.display = t === tab ? '' : 'none';
@@ -1365,6 +1365,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (e.target.id === 'avatar-modal') closeAvatarModal();
                 break;
 
+            // Delete review from profile page
+            case 'delete-profile-review':
+                deleteProfileReview(
+                    parseInt(el.dataset.reviewId),
+                    parseInt(el.dataset.gameId)
+                );
+                break;
+
             // Avatar edit button (opens modal)
             case 'open-avatar-modal':
                 document.getElementById('avatar-modal').style.display = 'flex';
@@ -1386,4 +1394,56 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fav search input — debounce on typing
     document.getElementById('fav-search-input')?.addEventListener('input', favSearchDebounce);
+
+    // ── Delete review from profile page ──────────────────────────────────
+    async function deleteProfileReview(reviewId, gameId) {
+        const res = await fetch(`/games/${gameId}/reviews/${reviewId}`, {
+            method: 'DELETE',
+            credentials: 'same-origin',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrf,
+            },
+        });
+
+        if (res.ok) {
+            const card = document.getElementById('profile-review-' + reviewId);
+            if (card) {
+                card.style.transition = 'opacity .25s';
+                card.style.opacity = '0';
+                setTimeout(() => {
+                    card.remove();
+
+                    // Show empty state if no reviews remain
+                    const main = document.querySelector('#panel-reviews .show-main');
+                    if (main && !main.querySelector('.review-profile-card')) {
+                        main.innerHTML = `
+                            <div class="show-card" style="text-align:center;padding:2.5rem 1rem">
+                                <i class="ti ti-message-off" style="font-size:2.5rem;color:var(--text-muted);display:block;margin-bottom:.75rem" aria-hidden="true"></i>
+                                <p style="color:var(--text-muted);margin:0">You haven't written any reviews yet.</p>
+                                <a href="/games" class="btn btn-primary btn-sm" style="margin-top:1rem;display:inline-block">Browse Games</a>
+                            </div>`;
+                    }
+
+                    // Update the review count chip on the tab
+                    const chip = document.querySelector('#tab-reviews .review-count-chip');
+                    if (chip) {
+                        const newCount = parseInt(chip.textContent) - 1;
+                        if (newCount <= 0) chip.remove();
+                        else chip.textContent = newCount;
+                    }
+
+                    // Update sidebar stat
+                    const statEl = document.querySelector('#panel-reviews .detail-row dd');
+                    if (statEl) {
+                        const cur = parseInt(statEl.textContent) || 0;
+                        statEl.textContent = Math.max(0, cur - 1);
+                    }
+                }, 250);
+            }
+            showProfileNotif('Review deleted.');
+        } else {
+            showProfileNotif('Could not delete review. Please try again.');
+        }
+    }
 });

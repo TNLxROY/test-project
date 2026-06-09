@@ -17,10 +17,14 @@ class ProfileController extends Controller
     {
         $user      = Auth::user();
         $userLevel = $xpService->getOrCreate($user);
+        $reviews = \App\Models\Review::where('user_id', $user->id)
+            ->latest()
+            ->get();
 
         return view('profile', [
             'user'      => $user,
             'userLevel' => $userLevel,
+            'reviews'   => $reviews,
         ]);
     }
 

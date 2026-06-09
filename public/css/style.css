@@ -3326,3 +3326,97 @@ footer{
 .fs-score-widget {
     margin-top: -8px;
 }
+
+/* ── MY REVIEWS TAB ──────────────────────────────────────────────────────── */
+.review-count-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent);
+    color: #fff;
+    font-size: .7rem;
+    font-weight: 700;
+    line-height: 1;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 99px;
+    margin-left: .35rem;
+    vertical-align: middle;
+}
+
+.review-profile-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.review-profile-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: .75rem;
+}
+
+.review-profile-meta {
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+}
+
+.review-profile-game-link {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    transition: color .15s;
+}
+.review-profile-game-link:hover {
+    color: var(--accent2);
+}
+.review-profile-game-link i {
+    color: var(--accent);
+    font-size: .95rem;
+}
+
+.review-profile-date {
+    font-size: .78rem;
+    color: var(--muted);
+}
+
+/* Category breakdown rows */
+.review-profile-cats {
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+    border-top: 1px solid var(--border);
+    padding-top: .75rem;
+}
+
+.review-profile-cat-row {
+    display: flex;
+    align-items: baseline;
+    gap: .5rem;
+    font-size: .82rem;
+}
+
+.review-profile-cat-name {
+    color: var(--muted);
+    min-width: 90px;
+    flex-shrink: 0;
+}
+
+.review-profile-cat-rating {
+    font-weight: 700;
+    color: var(--accent2);
+}
+
+.review-profile-cat-note {
+    color: var(--muted);
+    font-style: italic;
+    font-size: .78rem;
+}

@@ -83,6 +83,12 @@
             <button class="show-tab active" id="tab-about" data-profile-tab="about">
                 <i class="ti ti-user" aria-hidden="true"></i> About Me
             </button>
+            <button class="show-tab" id="tab-reviews" data-profile-tab="reviews">
+                <i class="ti ti-file-text" aria-hidden="true"></i> My Reviews
+                @if($userLevel->review_count > 0)
+                    <span class="review-count-chip">{{ $userLevel->review_count }}</span>
+                @endif
+            </button>
             <button class="show-tab" id="tab-settings" data-profile-tab="settings">
                 <i class="ti ti-settings" aria-hidden="true"></i> Settings
             </button>
@@ -213,6 +219,108 @@
     </div>
 </div>
 </div>{{-- /#panel-about --}}
+
+
+{{-- ── PANEL: MY REVIEWS ─────────────────────────────────────────────────── --}}
+<div id="panel-reviews" style="display:none">
+<div class="show-layout">
+
+    <div class="show-main">
+
+        @forelse($reviews as $review)
+        <div class="show-card review-profile-card" id="profile-review-{{ $review->id }}">
+
+            <div class="review-profile-header">
+                <div class="review-profile-meta">
+                    <a href="{{ route('games.show', $review->game_id) }}" class="review-profile-game-link">
+                        <i class="ti ti-device-gamepad-2" aria-hidden="true"></i>
+                        {{ $review->game_name }}
+                    </a>
+                    <span class="review-profile-date">{{ $review->created_at->format('M j, Y') }}</span>
+                </div>
+                <button class="review-delete-btn"
+                        data-action="delete-profile-review"
+                        data-review-id="{{ $review->id }}"
+                        data-game-id="{{ $review->game_id }}"
+                        title="Delete review"
+                        aria-label="Delete review for {{ $review->game_name }}">
+                    <i class="ti ti-trash" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            @if($review->rating)
+            <div class="review-rating-row" style="margin-top:.6rem">
+                <div class="review-stars">
+                    @for($s = 1; $s <= 10; $s++)
+                        @php
+                            $r = (float) $review->rating;
+                            $cls = 'review-star';
+                            if ($s <= floor($r)) $cls .= ' lit';
+                            elseif ($s === (int) ceil($r) && fmod($r, 1) > 0) $cls .= ' lit-partial';
+                        @endphp
+                        <span class="{{ $cls }}"><i class="ti ti-star"></i></span>
+                    @endfor
+                </div>
+                <span class="review-score">{{ number_format($review->rating, 1) }}</span>
+                @if($review->is_detailed)
+                    <span class="review-detailed-badge">Detailed</span>
+                @endif
+            </div>
+            @endif
+
+            @if($review->body)
+                <p class="review-body" style="margin-top:.6rem">{{ $review->body }}</p>
+            @endif
+
+            @if($review->categories)
+            <div class="review-profile-cats" style="margin-top:.75rem">
+                @foreach($review->categories as $cat)
+                <div class="review-profile-cat-row">
+                    <span class="review-profile-cat-name">{{ $cat['name'] }}</span>
+                    <span class="review-profile-cat-rating">{{ number_format($cat['rating'], 1) }}</span>
+                    @if(!empty($cat['note']))
+                        <span class="review-profile-cat-note">&mdash; {{ $cat['note'] }}</span>
+                    @endif
+                </div>
+                @endforeach
+            </div>
+            @endif
+
+        </div>
+        @empty
+        <div class="show-card" style="text-align:center;padding:2.5rem 1rem">
+            <i class="ti ti-message-off" style="font-size:2.5rem;color:var(--text-muted);display:block;margin-bottom:.75rem" aria-hidden="true"></i>
+            <p style="color:var(--text-muted);margin:0">You haven't written any reviews yet.</p>
+            <a href="{{ route('games.index') }}" class="btn btn-primary btn-sm" style="margin-top:1rem;display:inline-block">Browse Games</a>
+        </div>
+        @endforelse
+
+    </div>
+
+    <div class="show-sidebar">
+        <div class="show-card">
+            <h2 class="show-card-title">Review Stats</h2>
+            <dl class="detail-list">
+                <div class="detail-row">
+                    <dt>Total reviews</dt>
+                    <dd>{{ $userLevel->review_count }}</dd>
+                </div>
+                @if($reviews->count() > 0)
+                <div class="detail-row">
+                    <dt>Average rating</dt>
+                    <dd>{{ number_format($reviews->avg('rating'), 1) }} / 10</dd>
+                </div>
+                <div class="detail-row">
+                    <dt>Detailed reviews</dt>
+                    <dd>{{ $reviews->where('is_detailed', true)->count() }}</dd>
+                </div>
+                @endif
+            </dl>
+        </div>
+    </div>
+
+</div>
+</div>{{-- /#panel-reviews --}}
 
 
 {{-- ── PANEL: SETTINGS ──────────────────────────────────────────────────── --}}
