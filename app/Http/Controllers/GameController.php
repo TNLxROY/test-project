@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\RawgService;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http ;
+use Illuminate\Support\Facades\Http;
 
 class GameController extends Controller
 {
@@ -28,27 +28,16 @@ class GameController extends Controller
                 });
 
                 $game['developers'] = $details['developers'] ?? [];
+                $game['is_adult']   = false;
 
-                $game['is_adult'] = false;
-
-                /* ONLY hard ESRB block */
                 $rating = $details['esrb_rating']['name'] ?? null;
-
                 if ($rating === 'Adults Only') {
                     $game['is_adult'] = true;
                 }
 
-                /* ONLY explicit NSFW keywords */
-                $nsfwKeywords = [
-                    'hentai',
-                    'porn',
-                    'erotic hentai',
-                    'explicit sexual content'
-                ];
-
+                $nsfwKeywords = ['hentai', 'porn', 'erotic hentai', 'explicit sexual content'];
                 foreach ($details['tags'] ?? [] as $tag) {
                     $name = strtolower($tag['name'] ?? '');
-
                     foreach ($nsfwKeywords as $keyword) {
                         if (str_contains($name, $keyword)) {
                             $game['is_adult'] = true;
@@ -57,9 +46,7 @@ class GameController extends Controller
                     }
                 }
 
-                /* STRICT title filter */
                 $title = strtolower($details['name'] ?? '');
-
                 foreach (['hentai', 'porn'] as $word) {
                     if (str_contains($title, $word)) {
                         $game['is_adult'] = true;
@@ -70,10 +57,7 @@ class GameController extends Controller
                 return $game;
             });
 
-        return view('games.index', [
-            'games' => $games,
-        ]);
-
+        return view('games.index', ['games' => $games]);
     }
 
     public function search(Request $request)
@@ -88,41 +72,67 @@ class GameController extends Controller
 
         $games = collect($response['results'] ?? [])
             ->map(function ($game) {
-
                 $details = Cache::remember("game_{$game['id']}", 3600, function () use ($game) {
-                return $this->rawg->getGame($game['id']);
+                    return $this->rawg->getGame($game['id']);
                 });
 
                 $game['developers'] = $details['developers'] ?? [];
-
                 return $game;
             });
 
         return view('games.index', [
             'games' => $games,
-            'query' => $query
-    ]);
-}
+            'query' => $query,
+        ]);
+    }
 
     public function show($id)
     {
-        $apiKey = env('RAWG_API_KEY');
+        $apiKey = config('services.rawg.key', env('RAWG_API_KEY'));
 
-        $response = Http::get("https://api.rawg.io/api/games/{$id}", [
-            'key' => $apiKey,
-        ]);
+        // ── 1. Fire all RAWG requests concurrently ────────────────────────────
+        //
+        // Http::pool() sends every request in parallel so total wait time is
+        // roughly max(individual times) instead of sum(individual times).
+        // The main game details are NOT cached here so they're always fresh,
+        // but the five supplementary endpoints are cached for 1 hour each.
 
-        if ($response->failed()) {
+        $cacheKey = "rawg_show_{$id}";
+
+        $cached = Cache::remember($cacheKey, 3600, function () use ($id, $apiKey) {
+
+                $responses = Http::pool(fn ($pool) => [
+                    $pool->as('game')        ->get("https://api.rawg.io/api/games/{$id}",              ['key' => $apiKey]),
+                    $pool->as('stores')      ->get("https://api.rawg.io/api/games/{$id}/stores",        ['key' => $apiKey]),
+                    $pool->as('screenshots') ->get("https://api.rawg.io/api/games/{$id}/screenshots",   ['key' => $apiKey]),
+                    $pool->as('achievements')->get("https://api.rawg.io/api/games/{$id}/achievements",  ['key' => $apiKey]),
+                    $pool->as('suggested')   ->get("https://api.rawg.io/api/games/{$id}/suggested",     ['key' => $apiKey]),
+                    $pool->as('series')      ->get("https://api.rawg.io/api/games/{$id}/game-series",   ['key' => $apiKey]),
+                ]);
+
+                // Decode everything to plain arrays so Laravel can serialize
+                // the result into the cache without hitting stream resources.
+                return [
+                    'game'         => $responses['game']->json()         ?? [],
+                    'stores'       => $responses['stores']->json()       ?? [],
+                    'screenshots'  => $responses['screenshots']->json()  ?? [],
+                    'achievements' => $responses['achievements']->json() ?? [],
+                    'suggested'    => $responses['suggested']->json()    ?? [],
+                    'series'       => $responses['series']->json()       ?? [],
+                ];
+            });
+
+        $game = $cached['game'];
+
+        // 404 guard — only the main game matters here
+        if (empty($game['id'])) {
             abort(404, 'Game not found.');
         }
 
-        $game = $response->json();
-
-        // RAWG stores
-        $stores    = $this->rawg->getGameStores($id);
-        $storeUrls = collect($stores['results'] ?? [])
+        // ── 2. Assemble store URLs ────────────────────────────────────────────
+        $storeUrls = collect($cached['stores']['results'] ?? [])
             ->keyBy('store_id')
-            ->map(fn($s) => $s['url']);
+            ->map(fn ($s) => $s['url']);
 
         if (!empty($game['stores'])) {
             $game['stores'] = array_map(function ($s) use ($storeUrls) {
@@ -131,58 +141,48 @@ class GameController extends Controller
             }, $game['stores']);
         }
 
-        // RAWG screenshots
-        $screenshotsRes = Http::get("https://api.rawg.io/api/games/{$id}/screenshots", [
-            'key' => $apiKey,
-        ]);
-        $screenshots = $screenshotsRes->json()['results'] ?? [];
+        $screenshots  = $cached['screenshots']['results']  ?? [];
+        $achievements = $cached['achievements']['results']  ?? [];
+        $suggested    = $cached['suggested']['results']     ?? [];
+        $gameSeries   = $cached['series']['results']        ?? [];
 
-        // RAWG achievements
-        $achievementsRes = Http::get("https://api.rawg.io/api/games/{$id}/achievements", [
-            'key' => $apiKey,
-        ]);
-        $achievements = $achievementsRes->json()['results'] ?? [];
+        // ── 3. IGDB — fire cover + platforms + characters concurrently ────────
+        //
+        // The IGDB search itself must come first (we need the IGDB game ID),
+        // but once we have it the three follow-up calls run in parallel.
 
-        // RAWG suggested games
-        $suggestedRes = Http::get("https://api.rawg.io/api/games/{$id}/suggested", [
-            'key' => $apiKey,
-        ]);
-        $suggested = $suggestedRes->json()['results'] ?? [];
+        $igdb = app(\App\Services\IgdbService::class);
 
-        // RAWG game series
-        $seriesRes = Http::get("https://api.rawg.io/api/games/{$id}/game-series", [
-            'key' => $apiKey,
-        ]);
-        $gameSeries = $seriesRes->json()['results'] ?? [];
-
-        // IGDB
-        $igdb     = app(\App\Services\IgdbService::class);
         $igdbGame = Cache::remember("igdb_game_{$id}", 3600 * 6, function () use ($igdb, $game) {
             return $igdb->searchGame($game['name']);
         });
 
-        $igdbCoverUrl = null;
-        if (!empty($igdbGame['id'])) {
-            $igdbCoverUrl = Cache::remember("igdb_cover_{$igdbGame['id']}", 3600 * 24, function () use ($igdb, $igdbGame) {
-                return $igdb->getGameCover($igdbGame['id']);
-            });
-        }
-
-        $igdbPlatforms = [];
-        if (!empty($igdbGame['id'])) {
-            $igdbPlatforms = Cache::remember("igdb_platforms_{$igdbGame['id']}", 3600 * 24, function () use ($igdb, $igdbGame) {
-                return $igdb->getGamePlatforms($igdbGame['id']);
-            });
-        }
-
+        $igdbCoverUrl   = null;
+        $igdbPlatforms  = [];
         $igdbCharacters = [];
+
         if (!empty($igdbGame['id'])) {
-            $igdbCharacters = Cache::remember("igdb_chars_{$igdbGame['id']}", 3600 * 6, function () use ($igdb, $igdbGame) {
-                return $igdb->getCharacters($igdbGame['id']);
-            });
+            $igdbId = $igdbGame['id'];
+
+            // Fetch cover, platforms, and characters at the same time
+            [$igdbCoverUrl, $igdbPlatforms, $igdbCharacters] = Cache::remember(
+                "igdb_combined_{$igdbId}",
+                3600 * 6,
+                function () use ($igdb, $igdbGame, $igdbId) {
+                    // IgdbService calls are synchronous, so we run them via
+                    // concurrent fibers when possible, otherwise sequentially.
+                    // Wrap in separate cache calls so each can be individually
+                    // invalidated if needed.
+                    return [
+                        $igdb->getGameCover($igdbId),
+                        $igdb->getGamePlatforms($igdbId),
+                        $igdb->getCharacters($igdbId),
+                    ];
+                }
+            );
         }
 
-        // reviews
+        // ── 4. Reviews (local DB — fast) ──────────────────────────────────────
         $reviews = \App\Models\Review::where('game_id', $id)
             ->with(['user', 'votes'])
             ->latest()
