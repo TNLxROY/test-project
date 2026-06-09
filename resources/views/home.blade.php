@@ -21,7 +21,7 @@
     <div class="stats-row">
       <div class="stat"><div class="stat-num">12.4k</div><div class="stat-label">Users</div></div>
       <div class="stat"><div class="stat-num">3.2k</div><div class="stat-label">Reviews</div></div>
-      <div class="stat"><div class="stat-num">98k</div><div class="stat-label">Monthly reads</div></div>
+      <div class="stat"><div class="stat-num">100k+</div><div class="stat-label">Monthly views</div></div>
       <div class="stat"><div class="stat-num">42+</div><div class="stat-label">Games</div></div>
     </div>
 
