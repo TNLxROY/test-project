@@ -19,8 +19,8 @@ class ProfileController extends Controller
         $userLevel = $xpService->getOrCreate($user);
 
         return view('profile', [
-            'user' => Auth::user(),
-            'userLevel' => $userLevel
+            'user'      => $user,
+            'userLevel' => $userLevel,
         ]);
     }
 
@@ -49,6 +49,45 @@ class ProfileController extends Controller
         Auth::user()->update(['password' => Hash::make($data['password'])]);
 
         return response()->json(['message' => 'Password updated.']);
+    }
+
+    public function updateBio(Request $request)
+    {
+        $data = $request->validate([
+            'bio' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        Auth::user()->update(['bio' => $data['bio'] ?? null]);
+
+        return response()->json(['message' => 'Bio updated.']);
+    }
+
+    public function updateFavouriteGame(Request $request)
+    {
+        $data = $request->validate([
+            'game_id'    => ['required', 'integer'],
+            'game_name'  => ['required', 'string', 'max:255'],
+            'game_cover' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        Auth::user()->update([
+            'favourite_game_id'    => $data['game_id'],
+            'favourite_game_name'  => $data['game_name'],
+            'favourite_game_cover' => $data['game_cover'] ?? null,
+        ]);
+
+        return response()->json(['message' => 'Favourite game saved.']);
+    }
+
+    public function removeFavouriteGame()
+    {
+        Auth::user()->update([
+            'favourite_game_id'    => null,
+            'favourite_game_name'  => null,
+            'favourite_game_cover' => null,
+        ]);
+
+        return response()->json(['message' => 'Favourite game removed.']);
     }
 
     public function deleteAccount(Request $request)
@@ -93,7 +132,6 @@ class ProfileController extends Controller
         $cropY    = (int) $request->crop_y;
         $cropSize = (int) $request->crop_size;
 
-        // clamp to image bounds
         $cropX    = max(0, min($cropX, $origW - 1));
         $cropY    = max(0, min($cropY, $origH - 1));
         $cropSize = min($cropSize, $origW - $cropX, $origH - $cropY);

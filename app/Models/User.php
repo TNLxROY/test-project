@@ -18,6 +18,10 @@ class User extends Authenticatable
         'email',
         'password',
         'avatar',
+        'bio',
+        'favourite_game_id',
+        'favourite_game_name',
+        'favourite_game_cover',
     ];
 
     protected $hidden = [
@@ -51,9 +55,9 @@ class User extends Authenticatable
     public function friendshipWith(User $user): ?Friendship
     {
         return Friendship::where(function ($q) use ($user) {
-        $q->where('sender_id', $this->id)->where('receiver_id', $user->id);
+            $q->where('sender_id', $this->id)->where('receiver_id', $user->id);
         })->orWhere(function ($q) use ($user) {
-        $q->where('sender_id', $user->id)->where('receiver_id', $this->id);
+            $q->where('sender_id', $user->id)->where('receiver_id', $this->id);
         })->first();
     }
 

@@ -1810,7 +1810,7 @@ footer{
 .profile-hero-inner {
     position: relative;
     z-index: 1;
-    max-width: 900px;
+    max-width: 1100px;
     margin: 0 auto;
     padding: 0 2rem;
     display: flex;
@@ -2172,7 +2172,7 @@ footer{
 .player-hero-content {
     position: relative;
     z-index: 1;
-    max-width: 900px;
+    max-width: 1100px;
     margin: 0 auto;
     padding: 0 2rem;
 }
