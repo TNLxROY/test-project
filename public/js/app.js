@@ -937,3 +937,453 @@ window.voteReview = async function(reviewId, vote, clickedBtn) {
         dislikeBtn.classList.remove('loading');
     }
 };
+
+
+// =========================================================================
+// PROFILE PAGE
+// Only runs when the profile page elements are present in the DOM.
+// =========================================================================
+document.addEventListener('DOMContentLoaded', () => {
+    if (!document.getElementById('panel-about')) return; // not the profile page
+
+    // ── XP bar charge-up ─────────────────────────────────────────────────
+    setTimeout(() => {
+        const bar = document.querySelector('.profile-xp-bar-fill');
+        if (bar) bar.style.width = bar.dataset.xpTarget + '%';
+    }, 800);
+
+    // ── Tab switching ─────────────────────────────────────────────────────
+    function switchProfileTab(tab) {
+        ['about', 'settings'].forEach(t => {
+            document.getElementById('tab-' + t)?.classList.toggle('active', t === tab);
+            const panel = document.getElementById('panel-' + t);
+            if (panel) panel.style.display = t === tab ? '' : 'none';
+        });
+    }
+
+    // ── Shared fetch helper ───────────────────────────────────────────────
+    function profileFetch(url, method, body) {
+        return fetch(url, {
+            method,
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept':        'application/json',
+                'X-CSRF-TOKEN':  csrf,
+            },
+            body: JSON.stringify(body),
+        });
+    }
+
+    // ── Notifications ─────────────────────────────────────────────────────
+    function showProfileNotif(msg) {
+        const n = document.getElementById('profile-notif');
+        if (!n) return;
+        n.innerText = msg;
+        n.classList.add('show');
+        setTimeout(() => n.classList.remove('show'), 2800);
+    }
+
+    function showDeleteMsg(msg) {
+        const el = document.getElementById('delete-msg');
+        if (!el) return;
+        el.innerText     = msg;
+        el.style.display = 'block';
+    }
+
+    // ── Bio ───────────────────────────────────────────────────────────────
+    const bioTextarea = document.getElementById('about-bio');
+    const bioChars    = document.getElementById('bio-chars');
+    if (bioTextarea && bioChars) {
+        bioTextarea.addEventListener('input', () => {
+            bioChars.textContent = bioTextarea.value.length;
+        });
+    }
+
+    async function saveBio() {
+        const bio = bioTextarea?.value.trim() ?? '';
+        const res = await profileFetch('/profile/bio', 'POST', { bio });
+        if (res.ok) {
+            showProfileNotif('Bio saved!');
+        } else {
+            const data = await res.json().catch(() => ({}));
+            showProfileNotif(data.message || 'Failed to save bio.');
+        }
+    }
+
+    // ── Favourite game ────────────────────────────────────────────────────
+    let favDebounceTimer = null;
+
+    function favSearchDebounce() {
+        clearTimeout(favDebounceTimer);
+        favDebounceTimer = setTimeout(favSearchNow, 400);
+    }
+
+    async function favSearchNow() {
+        const input      = document.getElementById('fav-search-input');
+        const resultsBox = document.getElementById('fav-results');
+        const inner      = document.getElementById('fav-results-inner');
+        const noResults  = document.getElementById('fav-no-results');
+        const q          = input?.value.trim() ?? '';
+        if (!q) return;
+
+        inner.innerHTML          = '<p style="color:var(--text-muted);font-size:.875rem">Searching…</p>';
+        resultsBox.style.display = '';
+        noResults.style.display  = 'none';
+
+        try {
+            const res   = await fetch(`/api/games/search?q=${encodeURIComponent(q)}`, {
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf },
+            });
+            const data  = await res.json();
+            const games = data.results ?? [];
+
+            inner.innerHTML = '';
+
+            if (!games.length) {
+                noResults.style.display = '';
+                return;
+            }
+
+            games.slice(0, 8).forEach(game => {
+                const btn         = document.createElement('button');
+                btn.type          = 'button';
+                btn.className     = 'store-btn';
+                btn.style.cssText = 'display:flex;align-items:center;gap:.75rem;text-align:left;width:100%';
+
+                const thumb = game.background_image
+                    ? `<img src="${game.background_image}" alt="" style="width:42px;height:42px;object-fit:cover;border-radius:4px;flex-shrink:0">`
+                    : `<div style="width:42px;height:42px;border-radius:4px;background:var(--surface2);flex-shrink:0;display:flex;align-items:center;justify-content:center"><i class="ti ti-device-gamepad-2"></i></div>`;
+
+                const released = game.released
+                    ? `<span style="font-size:.75rem;color:var(--text-muted)">${game.released.slice(0, 4)}</span>`
+                    : '';
+
+                btn.innerHTML = `${thumb}<span style="flex:1;min-width:0"><span style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(game.name)}</span>${released}</span>`;
+                btn.addEventListener('click', () => selectFavGame(game));
+                inner.appendChild(btn);
+            });
+
+        } catch {
+            inner.innerHTML = '<p style="color:var(--text-muted);font-size:.875rem">Search failed. Please try again.</p>';
+        }
+    }
+
+    async function selectFavGame(game) {
+        const msg = document.getElementById('fav-msg');
+        msg.style.display = 'none';
+
+        const res = await profileFetch('/profile/favourite-game', 'POST', {
+            game_id:    game.id,
+            game_name:  game.name,
+            game_cover: game.background_image ?? null,
+        });
+
+        if (res.ok) {
+            document.getElementById('fav-cover').src            = game.background_image ?? '';
+            document.getElementById('fav-name').textContent     = game.name;
+            document.getElementById('fav-current').style.display = '';
+
+            const sideCard = document.getElementById('fav-sidebar-card');
+            const sideLink = document.getElementById('fav-sidebar-link');
+            const sideName = document.getElementById('fav-sidebar-name');
+            sideCard.style.display   = '';
+            sideLink.href            = `/games/${game.id}`;
+            sideName.textContent     = game.name;
+
+            document.getElementById('fav-search-input').value   = '';
+            document.getElementById('fav-results').style.display = 'none';
+
+            showProfileNotif('Favourite game saved!');
+        } else {
+            const data        = await res.json().catch(() => ({}));
+            msg.innerText     = data.message || 'Failed to save favourite game.';
+            msg.style.display = 'block';
+        }
+    }
+
+    async function removeFavGame() {
+        const res = await profileFetch('/profile/favourite-game', 'DELETE', {});
+        if (res.ok) {
+            document.getElementById('fav-current').style.display      = 'none';
+            document.getElementById('fav-sidebar-card').style.display = 'none';
+            showProfileNotif('Favourite game removed.');
+        }
+    }
+
+    function escHtml(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // ── Name & password ───────────────────────────────────────────────────
+    async function saveName() {
+        const name = document.getElementById('profile-name')?.value.trim();
+        if (!name) return;
+        const res  = await profileFetch('/profile/name', 'POST', { name });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+            showProfileNotif('Name updated!');
+            const displayName = document.querySelector('.profile-name');
+            if (displayName) displayName.innerText = name;
+            const pubName = document.getElementById('pub-name');
+            if (pubName) pubName.textContent = name;
+        } else {
+            showProfileNotif(data.message || 'Failed to update name.');
+        }
+    }
+
+    async function savePassword() {
+        const current_password      = document.getElementById('cur-pass')?.value;
+        const password              = document.getElementById('new-pass')?.value;
+        const password_confirmation = document.getElementById('new-pass-confirm')?.value;
+        if (!current_password || !password || !password_confirmation) {
+            showProfileNotif('Please fill in all password fields.');
+            return;
+        }
+        const res  = await profileFetch('/profile/password', 'POST', { current_password, password, password_confirmation });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+            showProfileNotif('Password updated!');
+            ['cur-pass', 'new-pass', 'new-pass-confirm'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+        } else {
+            showProfileNotif(data.message || 'Failed to update password.');
+        }
+    }
+
+    // ── Delete account ────────────────────────────────────────────────────
+    function openDeleteModal()  { document.getElementById('delete-modal-overlay').style.display = 'flex'; }
+    function closeDeleteModal() { document.getElementById('delete-modal-overlay').style.display = 'none'; }
+
+    async function confirmDelete() {
+        const password = document.getElementById('delete-pass')?.value;
+        if (!password) { showDeleteMsg('Please enter your password.'); return; }
+        const res  = await profileFetch('/profile/delete', 'DELETE', { password });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+            window.location.href = '/';
+        } else {
+            showDeleteMsg(data.message || 'Incorrect password.');
+        }
+    }
+
+    // ── Avatar crop ───────────────────────────────────────────────────────
+    const cropState = {
+        x: 0, y: 0,
+        scale: 1,
+        dragging: false,
+        startX: 0, startY: 0,
+        naturalW: 0, naturalH: 0,
+        file: null,
+    };
+
+    const ZONE     = 300;
+    const cropZone = document.getElementById('crop-zone');
+
+    function closeAvatarModal() {
+        document.getElementById('avatar-modal').style.display = 'none';
+    }
+
+    function applyCrop() {
+        const img = document.getElementById('crop-img');
+        if (!img) return;
+        img.style.width     = (cropState.naturalW * cropState.scale) + 'px';
+        img.style.height    = (cropState.naturalH * cropState.scale) + 'px';
+        img.style.transform = `translate(${cropState.x}px, ${cropState.y}px)`;
+    }
+
+    function startDrag(e) {
+        cropState.dragging = true;
+        const pt = e.touches ? e.touches[0] : e;
+        cropState.startX = pt.clientX - cropState.x;
+        cropState.startY = pt.clientY - cropState.y;
+    }
+
+    function onDrag(e) {
+        if (!cropState.dragging) return;
+        const pt = e.touches ? e.touches[0] : e;
+        cropState.x = pt.clientX - cropState.startX;
+        cropState.y = pt.clientY - cropState.startY;
+        applyCrop();
+    }
+
+    document.addEventListener('mousemove', onDrag);
+    document.addEventListener('touchmove', onDrag, { passive: true });
+    document.addEventListener('mouseup',   () => { cropState.dragging = false; });
+    document.addEventListener('touchend',  () => { cropState.dragging = false; });
+
+    if (cropZone) {
+        cropZone.addEventListener('mousedown',  startDrag);
+        cropZone.addEventListener('touchstart', startDrag, { passive: true });
+        cropZone.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta    = e.deltaY > 0 ? 0.9 : 1.1;
+            const minScale = ZONE / Math.max(cropState.naturalW, cropState.naturalH);
+            const newScale = Math.max(minScale, Math.min(10, cropState.scale * delta));
+            const cx = ZONE / 2, cy = ZONE / 2;
+            cropState.x     = cx - (cx - cropState.x) * (newScale / cropState.scale);
+            cropState.y     = cy - (cy - cropState.y) * (newScale / cropState.scale);
+            cropState.scale = newScale;
+            applyCrop();
+        }, { passive: false });
+    }
+
+    const avatarFileInput = document.getElementById('avatar-file-input');
+    if (avatarFileInput) {
+        avatarFileInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
+            cropState.file = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = document.getElementById('crop-img');
+                img.src   = e.target.result;
+                img.onload = () => {
+                    cropState.naturalW = img.naturalWidth;
+                    cropState.naturalH = img.naturalHeight;
+                    const fitScale     = ZONE / Math.min(cropState.naturalW, cropState.naturalH);
+                    cropState.scale    = fitScale;
+                    cropState.x        = (ZONE - cropState.naturalW * fitScale) / 2;
+                    cropState.y        = (ZONE - cropState.naturalH * fitScale) / 2;
+                    applyCrop();
+                };
+                document.getElementById('avatar-modal').style.display = 'flex';
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    async function saveAvatar() {
+        const msg = document.getElementById('avatar-msg');
+        msg.style.display = 'none';
+        if (!cropState.file) {
+            msg.innerText     = 'Please choose an image first.';
+            msg.style.display = 'block';
+            return;
+        }
+        const cropXNatural    = Math.round(-cropState.x / cropState.scale);
+        const cropYNatural    = Math.round(-cropState.y / cropState.scale);
+        const cropSizeNatural = Math.round(ZONE / cropState.scale);
+        const formData = new FormData();
+        formData.append('avatar',    cropState.file);
+        formData.append('crop_x',    Math.max(0, cropXNatural));
+        formData.append('crop_y',    Math.max(0, cropYNatural));
+        formData.append('crop_size', cropSizeNatural);
+        formData.append('_token',    csrf);
+        const res  = await fetch('/profile/avatar', { method: 'POST', credentials: 'same-origin', body: formData });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+            closeAvatarModal();
+            const wrap     = document.getElementById('avatar-wrap');
+            const initials = document.getElementById('avatar-initials');
+            let   imgEl    = document.getElementById('avatar-img');
+            if (initials) initials.remove();
+            if (!imgEl) {
+                imgEl           = document.createElement('img');
+                imgEl.id        = 'avatar-img';
+                imgEl.alt       = 'Avatar';
+                imgEl.className = 'profile-avatar-img';
+                wrap.prepend(imgEl);
+            }
+            imgEl.src = data.avatar_url;
+            if (!document.getElementById('remove-avatar-btn')) {
+                const removeBtn         = document.createElement('button');
+                removeBtn.id            = 'remove-avatar-btn';
+                removeBtn.className     = 'btn btn-ghost btn-sm';
+                removeBtn.style.cssText = 'margin-top:.5rem;font-size:.75rem';
+                removeBtn.textContent   = 'Remove photo';
+                removeBtn.dataset.action = 'remove-avatar';
+                document.querySelector('.profile-hero-inner > div:last-child').appendChild(removeBtn);
+            }
+            showProfileNotif('Profile photo updated!');
+        } else {
+            msg.innerText     = data.message ?? (data.errors ? JSON.stringify(data.errors) : 'Upload failed.');
+            msg.style.display = 'block';
+        }
+    }
+
+    async function removeAvatar() {
+        const res = await fetch('/profile/avatar', {
+            method: 'DELETE', credentials: 'same-origin',
+            headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+        });
+        if (res.ok) {
+            const imgEl = document.getElementById('avatar-img');
+            const wrap  = document.getElementById('avatar-wrap');
+            const name  = document.getElementById('profile-display-name')?.innerText || '?';
+            if (imgEl) imgEl.remove();
+            const initials       = document.createElement('div');
+            initials.id          = 'avatar-initials';
+            initials.className   = 'profile-avatar-lg';
+            initials.textContent = name[0].toUpperCase();
+            wrap.prepend(initials);
+            document.getElementById('remove-avatar-btn')?.remove();
+            cropState.file = null;
+            showProfileNotif('Profile photo removed.');
+        }
+    }
+
+    // ── Event delegation — wires all data-action attributes ──────────────
+    document.addEventListener('click', (e) => {
+        const el     = e.target.closest('[data-action]');
+        const action = el?.dataset.action;
+        if (!action) return;
+
+        switch (action) {
+            // Tabs
+            case 'profile-tab': break; // handled by data-profile-tab below
+
+            // Bio
+            case 'save-bio':           saveBio();           break;
+
+            // Favourite game
+            case 'fav-search':         favSearchNow();      break;
+            case 'remove-fav-game':    removeFavGame();      break;
+
+            // Settings
+            case 'save-name':          saveName();          break;
+            case 'save-password':      savePassword();      break;
+
+            // Delete modal
+            case 'open-delete-modal':  openDeleteModal();   break;
+            case 'close-delete-modal': closeDeleteModal();  break;
+            case 'confirm-delete':     confirmDelete();     break;
+            case 'close-delete-modal-overlay':
+                if (e.target.id === 'delete-modal-overlay') closeDeleteModal();
+                break;
+
+            // Avatar modal
+            case 'save-avatar':        saveAvatar();        break;
+            case 'remove-avatar':      removeAvatar();      break;
+            case 'close-avatar-modal': closeAvatarModal();  break;
+            case 'choose-avatar-file':
+                document.getElementById('avatar-file-input')?.click();
+                break;
+            case 'close-avatar-modal-overlay':
+                if (e.target.id === 'avatar-modal') closeAvatarModal();
+                break;
+
+            // Avatar edit button (opens modal)
+            case 'open-avatar-modal':
+                document.getElementById('avatar-modal').style.display = 'flex';
+                if (!cropState.file) document.getElementById('avatar-file-input')?.click();
+                break;
+        }
+    });
+
+    // Tab buttons use data-profile-tab instead of data-action
+    document.querySelectorAll('[data-profile-tab]').forEach(btn => {
+        btn.addEventListener('click', () => switchProfileTab(btn.dataset.profileTab));
+    });
+
+    // Avatar edit button
+    document.getElementById('avatar-edit-btn')?.addEventListener('click', () => {
+        document.getElementById('avatar-modal').style.display = 'flex';
+        if (!cropState.file) document.getElementById('avatar-file-input')?.click();
+    });
+
+    // Fav search input — debounce on typing
+    document.getElementById('fav-search-input')?.addEventListener('input', favSearchDebounce);
+});
