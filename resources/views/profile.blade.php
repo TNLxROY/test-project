@@ -89,6 +89,13 @@
                     <span class="review-count-chip">{{ $userLevel->review_count }}</span>
                 @endif
             </button>
+            <button class="show-tab" id="tab-titles" data-profile-tab="titles">
+                <i class="ti ti-tag" aria-hidden="true"></i> Titles
+                @php $unlockedTitles = collect($titles ?? [])->where('unlocked', true); @endphp
+                @if($unlockedTitles->count() > 0)
+                    <span class="review-count-chip">{{ $unlockedTitles->count() }}</span>
+                @endif
+            </button>
             <button class="show-tab" id="tab-settings" data-profile-tab="settings">
                 <i class="ti ti-settings" aria-hidden="true"></i> Settings
             </button>
@@ -332,6 +339,117 @@
 
 </div>
 </div>{{-- /#panel-reviews --}}
+
+
+{{-- ── PANEL: TITLES ─────────────────────────────────────────────────────── --}}
+<div id="panel-titles" style="display:none">
+<div class="show-layout">
+
+    <div class="show-main">
+
+        @php
+            $unlockedTitles = collect($titles ?? [])->where('unlocked', true);
+            $lockedTitles   = collect($titles ?? [])->where('unlocked', false);
+        @endphp
+
+        {{-- Active title selector --}}
+        <div class="show-card">
+            <h2 class="show-card-title">Active Title</h2>
+            @if($unlockedTitles->count() > 0)
+                <p style="color:var(--text-muted);font-size:.875rem;margin-bottom:1rem">
+                    Select the title displayed on your profile. Click any unlocked title below to equip it.
+                </p>
+                <div class="title-active-display" id="title-active-display">
+                    @if($user->active_title)
+                        <span class="title-badge title-badge--active">{{ $user->active_title }}</span>
+                        <button class="btn btn-ghost btn-sm" data-action="clear-title" style="margin-left:.75rem;font-size:.75rem">
+                            Remove
+                        </button>
+                    @else
+                        <span style="color:var(--text-muted);font-size:.875rem">No title equipped — pick one below.</span>
+                    @endif
+                </div>
+            @else
+                <p style="color:var(--text-muted);font-size:.875rem">
+                    You haven't unlocked any titles yet. Complete achievements to earn them!
+                </p>
+            @endif
+        </div>
+
+        {{-- Unlocked titles --}}
+        @if($unlockedTitles->count() > 0)
+        <div class="show-card">
+            <h2 class="show-card-title">
+                <i class="ti ti-trophy" style="color:var(--accent)"></i>
+                Unlocked
+                <span class="review-count-badge" style="margin-left:.4rem">{{ $unlockedTitles->count() }}</span>
+            </h2>
+            <div class="titles-grid">
+                @foreach($unlockedTitles as $t)
+                <button class="title-card title-card--unlocked {{ ($user->active_title === $t['label']) ? 'title-card--equipped' : '' }}"
+                        data-action="equip-title"
+                        data-title="{{ $t['label'] }}"
+                        title="Equip: {{ $t['label'] }}">
+                    <span class="title-card-label">{{ $t['label'] }}</span>
+                    <span class="title-card-source">{{ $t['achievement'] }}</span>
+                    @if($user->active_title === $t['label'])
+                        <span class="title-card-equipped-chip">Equipped</span>
+                    @endif
+                </button>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        {{-- Locked titles --}}
+        @if($lockedTitles->count() > 0)
+        <div class="show-card">
+            <h2 class="show-card-title" style="color:var(--text-muted)">
+                <i class="ti ti-lock"></i>
+                Locked
+                <span class="review-count-badge" style="margin-left:.4rem">{{ $lockedTitles->count() }}</span>
+            </h2>
+            <div class="titles-grid">
+                @foreach($lockedTitles as $t)
+                <div class="title-card title-card--locked">
+                    @if($t['secret'] ?? false)
+                        <span class="title-card-label" style="color:var(--text-muted)">???</span>
+                        <span class="title-card-source">Secret title — keep playing to discover it.</span>
+                    @else
+                        <span class="title-card-label" style="color:var(--text-muted)">{{ $t['label'] }}</span>
+                        <span class="title-card-source">Unlock via: {{ $t['achievement'] }}</span>
+                    @endif
+                    <i class="ti ti-lock title-card-lock-icon"></i>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+    </div>
+
+    <div class="show-sidebar">
+        <div class="show-card">
+            <h2 class="show-card-title">About Titles</h2>
+            <p style="color:var(--text-muted);font-size:.875rem;line-height:1.6">
+                Titles are short labels that appear next to your name. Earn them by completing achievements.
+                Only one title can be active at a time.
+            </p>
+            <dl class="detail-list" style="margin-top:1rem">
+                <div class="detail-row">
+                    <dt>Unlocked</dt>
+                    <dd>{{ $unlockedTitles->count() }} / {{ collect($titles ?? [])->count() }}</dd>
+                </div>
+                <div class="detail-row">
+                    <dt>Active</dt>
+                    <dd id="sidebar-active-title">{{ $user->active_title ?? '—' }}</dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+
+</div>
+</div>{{-- /#panel-titles --}}
 
 
 {{-- ── PANEL: SETTINGS ──────────────────────────────────────────────────── --}}

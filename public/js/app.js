@@ -954,7 +954,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Tab switching ─────────────────────────────────────────────────────
     function switchProfileTab(tab) {
-        ['about', 'reviews', 'settings'].forEach(t => {
+        ['about', 'reviews', 'titles', 'settings'].forEach(t => {
             document.getElementById('tab-' + t)?.classList.toggle('active', t === tab);
             const panel = document.getElementById('panel-' + t);
             if (panel) panel.style.display = t === tab ? '' : 'none';
@@ -1327,6 +1327,47 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // ── Title equip ───────────────────────────────────────────────────────
+    async function equipTitle(label) {
+        const res = label
+            ? await profileFetch('/profile/title', 'POST', { title: label })
+            : await profileFetch('/profile/title', 'DELETE', {});
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) { showProfileNotif(data.message || 'Could not update title.'); return; }
+
+        // Update all title cards
+        document.querySelectorAll('.title-card--unlocked').forEach(card => {
+            const equipped = card.dataset.title === label;
+            card.classList.toggle('title-card--equipped', equipped);
+            const chip = card.querySelector('.title-card-equipped-chip');
+            if (equipped && !chip) {
+                const c = document.createElement('span');
+                c.className = 'title-card-equipped-chip';
+                c.textContent = 'Equipped';
+                card.appendChild(c);
+            } else if (!equipped && chip) {
+                chip.remove();
+            }
+        });
+
+        // Update active display
+        const display = document.getElementById('title-active-display');
+        if (display) {
+            if (label) {
+                display.innerHTML = `<span class="title-badge title-badge--active">${label}</span>
+                    <button class="btn btn-ghost btn-sm" data-action="clear-title" style="margin-left:.75rem;font-size:.75rem">Remove</button>`;
+            } else {
+                display.innerHTML = `<span style="color:var(--text-muted);font-size:.875rem">No title equipped — pick one below.</span>`;
+            }
+        }
+
+        // Update sidebar stat
+        const sidebarTitle = document.getElementById('sidebar-active-title');
+        if (sidebarTitle) sidebarTitle.textContent = label || '—';
+
+        showProfileNotif(label ? `Title equipped: "${label}"` : 'Title removed.');
+    }
+
     // ── Event delegation — wires all data-action attributes ──────────────
     document.addEventListener('click', (e) => {
         const el     = e.target.closest('[data-action]');
@@ -1373,6 +1414,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     parseInt(el.dataset.reviewId),
                     parseInt(el.dataset.gameId)
                 );
+                break;
+
+            // Titles
+            case 'equip-title':
+                equipTitle(el.dataset.title);
+                break;
+            case 'clear-title':
+                equipTitle('');
                 break;
 
             // Avatar edit button (opens modal)

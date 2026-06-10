@@ -10,21 +10,24 @@ use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use App\Services\XpService;
+use App\Services\AchievementService;
 
 class ProfileController extends Controller
 {
-    public function show(XpService $xpService)
+    public function show(XpService $xpService, AchievementService $achievementService)
     {
         $user      = Auth::user();
         $userLevel = $xpService->getOrCreate($user);
-        $reviews = \App\Models\Review::where('user_id', $user->id)
+        $reviews   = \App\Models\Review::where('user_id', $user->id)
             ->latest()
             ->get();
+        $titles    = $achievementService->titlesForUser($user);
 
         return view('profile', [
             'user'      => $user,
             'userLevel' => $userLevel,
             'reviews'   => $reviews,
+            'titles'    => $titles,
         ]);
     }
 
@@ -94,6 +97,37 @@ class ProfileController extends Controller
         return response()->json(['message' => 'Favourite game removed.']);
     }
 
+    public function equipTitle(Request $request, AchievementService $achievementService)
+    {
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+        ]);
+
+        $user   = Auth::user();
+        $titles = $achievementService->titlesForUser($user);
+
+        // Ensure the requested title is actually unlocked by this user
+        $unlocked = collect($titles)
+            ->where('unlocked', true)
+            ->pluck('label')
+            ->contains($data['title']);
+
+        if (!$unlocked) {
+            return response()->json(['message' => 'Title not unlocked.'], 403);
+        }
+
+        $user->update(['active_title' => $data['title']]);
+
+        return response()->json(['message' => 'Title equipped.', 'active_title' => $data['title']]);
+    }
+
+    public function clearTitle()
+    {
+        Auth::user()->update(['active_title' => null]);
+
+        return response()->json(['message' => 'Title removed.']);
+    }
+
     public function deleteAccount(Request $request)
     {
         $request->validate(['password' => ['required']]);
@@ -149,7 +183,7 @@ class ProfileController extends Controller
 
         $user->update(['avatar' => $filename]);
 
-        app(\App\Services\AchievementService::class)->checkAndAward(Auth::user());
+        app(AchievementService::class)->checkAndAward(Auth::user());
 
         return response()->json([
             'message'    => 'Avatar updated.',

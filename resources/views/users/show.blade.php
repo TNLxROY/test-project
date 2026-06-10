@@ -116,31 +116,138 @@
     </div>
 </div>
 
-{{-- Reviews --}}
-<div class="reviews-layout">
-    @if(count($reviews) === 0)
-        <div class="reviews-empty">
-            <i class="ti ti-message-off reviews-empty-icon"></i>
-            <h3>No reviews yet</h3>
-            <p>{{ $user->name }} hasn't reviewed any games yet.</p>
-        </div>
-    @else
-        <h2 class="player-reviews-title">Reviews by {{ $user->name }}</h2>
-        @foreach($reviews as $review)
-        <a href="{{ route('games.show', $review->game_id) }}" class="review-card review-card-link">
-            <div class="review-header">
-                <div class="review-game-badge">
-                    <i class="ti ti-device-gamepad-2"></i>
-                </div>
-                <div>
-                    <div class="review-author">{{ $review->game_name }}</div>
-                    <div class="review-date">{{ $review->created_at->format('M j, Y') }}</div>
-                </div>
+{{-- Favourite game + bio banner --}}
+@if($user->favourite_game_id || $user->bio)
+<div class="player-about-banner-wrap">
+<div class="player-about-banner">
+    @if($user->favourite_game_id)
+    <a href="{{ route('games.show', $user->favourite_game_id) }}" class="player-fav-game">
+        @if($user->favourite_game_cover)
+            <img src="{{ $user->favourite_game_cover }}" alt="{{ $user->favourite_game_name }}" class="player-fav-cover">
+        @else
+            <div class="player-fav-cover player-fav-cover--placeholder">
+                <i class="ti ti-device-gamepad-2" aria-hidden="true"></i>
             </div>
-            <p class="review-body">{{ $review->body }}</p>
-        </a>
-        @endforeach
+        @endif
+        <div class="player-fav-info">
+            <span class="player-fav-label"><i class="ti ti-heart-filled" aria-hidden="true"></i> Favourite Game</span>
+            <span class="player-fav-name">{{ $user->favourite_game_name }}</span>
+        </div>
+    </a>
     @endif
+
+    @if($user->bio)
+        @if($user->favourite_game_id)
+            <div class="player-about-divider"></div>
+        @endif
+        <div class="player-about-bio-wrap">
+            <span class="player-about-bio-label">About</span>
+            <p class="player-about-bio">{{ $user->bio }}</p>
+        </div>
+    @endif
+</div>
+</div>
+@endif
+
+{{-- Reviews --}}
+<div class="show-layout">
+<div class="show-main">
+
+    @forelse($reviews as $review)
+    <div class="show-card review-profile-card"
+         @if(!empty($review->game_cover)) data-cover="{{ $review->game_cover }}" @endif>
+
+        <div class="review-profile-body">
+
+            {{-- Top row: thumbnail · meta · score pill --}}
+            <div class="review-profile-header">
+
+                {{-- Small cover thumbnail --}}
+                <div class="review-profile-cover">
+                    @if(!empty($review->game_cover))
+                        <img src="{{ $review->game_cover }}" alt="{{ $review->game_name }} cover" crossorigin="anonymous">
+                    @else
+                        <i class="ti ti-device-gamepad-2 review-profile-cover-placeholder" aria-hidden="true"></i>
+                    @endif
+                </div>
+
+                {{-- Game name + date + badge --}}
+                <div class="review-profile-meta">
+                    <a href="{{ route('games.show', $review->game_id) }}" class="review-profile-game-link">
+                        {{ $review->game_name }}
+                    </a>
+                    <div class="review-profile-sub">
+                        <span class="review-profile-date">{{ $review->created_at->format('M j, Y') }}</span>
+                        @if($review->is_detailed)
+                            <span class="review-type-badge review-type-badge--detailed">Detailed</span>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- Score pill --}}
+                @if($review->rating)
+                <div class="review-profile-actions">
+                    <div class="review-profile-score-pill">
+                        <span class="review-profile-score-big">{{ number_format($review->rating, 1) }}</span>
+                        <span class="review-profile-score-denom">/10</span>
+                    </div>
+                </div>
+                @endif
+
+            </div>{{-- /.review-profile-header --}}
+
+            {{-- Review body text --}}
+            @if($review->body)
+                <p class="review-body">{{ $review->body }}</p>
+            @endif
+
+            {{-- Category chips --}}
+            @if($review->categories)
+            <div class="review-profile-cats">
+                @foreach($review->categories as $cat)
+                <div class="review-profile-cat-row">
+                    <span class="review-profile-cat-name">{{ $cat['name'] }}</span>
+                    <span class="review-profile-cat-rating">{{ number_format($cat['rating'], 1) }}</span>
+                </div>
+                @endforeach
+            </div>
+            @endif
+
+        </div>{{-- /.review-profile-body --}}
+
+    </div>{{-- /.review-profile-card --}}
+    @empty
+    <div class="show-card" style="text-align:center;padding:2.5rem 1rem">
+        <i class="ti ti-message-off" style="font-size:2.5rem;color:var(--text-muted);display:block;margin-bottom:.75rem" aria-hidden="true"></i>
+        <h3 style="margin:0 0 .5rem">No reviews yet</h3>
+        <p style="color:var(--text-muted);margin:0">{{ $user->name }} hasn't reviewed any games yet.</p>
+    </div>
+    @endforelse
+
+</div>
+
+<div class="show-sidebar">
+    <div class="show-card">
+        <h2 class="show-card-title">Review Stats</h2>
+        <dl class="detail-list">
+            <div class="detail-row">
+                <dt>Total reviews</dt>
+                <dd>{{ count($reviews) }}</dd>
+            </div>
+            @if(count($reviews) > 0)
+            <div class="detail-row">
+                <dt>Member since</dt>
+                <dd>{{ $user->created_at->format('M j, Y') }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Level</dt>
+                <dd>{{ $userLevel->level }}</dd>
+            </div>
+            @endif
+        </dl>
+    </div>
+</div>
+
 </div>
 
 <script>
@@ -149,6 +256,53 @@ setTimeout(() => {
     const bar = document.querySelector('.profile-xp-bar-fill');
     if (bar) bar.style.width = bar.dataset.xpTarget + '%';
 }, 800);
+
+// Cover art dominant-colour tint via Canvas
+function tintReviewCards() {
+    document.querySelectorAll('.review-profile-card[data-cover]').forEach(card => {
+        if (card.dataset.tinted) return;
+        const coverUrl = card.dataset.cover;
+        if (!coverUrl) return;
+
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+
+        img.onload = () => {
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = canvas.height = 16;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, 16, 16);
+
+                const { data } = ctx.getImageData(0, 0, 16, 16);
+                let r = 0, g = 0, b = 0, count = 0;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    if (data[i + 3] < 128) continue;
+                    const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                    if (brightness < 20 || brightness > 235) continue;
+                    r += data[i]; g += data[i + 1]; b += data[i + 2];
+                    count++;
+                }
+
+                if (!count) return;
+
+                r = Math.round(r / count);
+                g = Math.round(g / count);
+                b = Math.round(b / count);
+
+                card.style.setProperty('--card-tint', `rgb(${r},${g},${b})`);
+                card.style.borderLeftColor = `rgba(${r},${g},${b},0.45)`;
+                card.style.borderLeftWidth = '3px';
+                card.dataset.tinted = '1';
+            } catch (_) { /* CORS or security error — skip silently */ }
+        };
+
+        img.src = coverUrl;
+    });
+}
+
+tintReviewCards();
 
 
 async function friendFetch(url, method) {

@@ -22,6 +22,7 @@ class User extends Authenticatable
         'favourite_game_id',
         'favourite_game_name',
         'favourite_game_cover',
+        'active_title',
     ];
 
     protected $hidden = [
@@ -40,6 +41,11 @@ class User extends Authenticatable
     public function reviews()
     {
         return $this->hasMany(\App\Models\Review::class);
+    }
+
+    public function achievements()
+    {
+        return $this->hasMany(UserAchievement::class);
     }
 
     public function sentFriendRequests()

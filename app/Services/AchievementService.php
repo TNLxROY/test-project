@@ -121,14 +121,63 @@ class AchievementService
     }
 
     /**
+     * Maps achievement keys to the title label they grant.
+     * Add an entry here whenever an achievement should unlock a title.
+     */
+    public function titleMap(): array
+    {
+        return [
+            'first_review'  => 'First Words',
+            'review_5'      => 'Critic',
+            'review_10'     => 'Seasoned Reviewer',
+            'review_25'     => 'Fact Speaker',
+            'review_50'     => 'Legendary Critic',
+            'first_friend'  => 'Making Friends',
+            'friends_5'     => 'Social Gamer',
+            'friends_10'    => 'Community Pillar',
+            'avatar_set'    => 'Face of the Community',
+            'early_adopter' => 'Early Adopter',
+        ];
+    }
+
+    /**
+     * Returns all titles with unlocked status for a user.
+     * Each entry: [label, achievement, unlocked, secret]
+     */
+    public function titlesForUser(User $user): array
+    {
+        $earned = UserAchievement::where('user_id', $user->id)
+                    ->pluck('achievement_key')
+                    ->toArray();
+
+        $achievements = $this->all();
+        $map          = $this->titleMap();
+        $titles       = [];
+
+        foreach ($map as $achievementKey => $titleLabel) {
+            $achievement = $achievements[$achievementKey] ?? null;
+            if (!$achievement) continue;
+
+            $titles[] = [
+                'label'       => $titleLabel,
+                'achievement' => $achievement['title'],
+                'unlocked'    => in_array($achievementKey, $earned),
+                'secret'      => $achievement['secret'] ?? false,
+            ];
+        }
+
+        return $titles;
+    }
+
+    /**
      * Check and award any newly earned achievements for a user.
      * Returns array of newly awarded achievement keys.
      */
     public function checkAndAward(User $user): array
     {
-        $earned    = UserAchievement::where('user_id', $user->id)
-                        ->pluck('achievement_key')
-                        ->toArray();
+        $earned = UserAchievement::where('user_id', $user->id)
+                    ->pluck('achievement_key')
+                    ->toArray();
 
         $newlyEarned = [];
 

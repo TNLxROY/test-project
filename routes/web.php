@@ -56,6 +56,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile/delete',                [App\Http\Controllers\ProfileController::class, 'deleteAccount']);
     Route::post('/profile/avatar',                  [App\Http\Controllers\ProfileController::class, 'updateAvatar']);
     Route::delete('/profile/avatar',                [App\Http\Controllers\ProfileController::class, 'deleteAvatar']);
+    Route::post('/profile/title',                   [App\Http\Controllers\ProfileController::class, 'equipTitle']);
+    Route::delete('/profile/title',                 [App\Http\Controllers\ProfileController::class, 'clearTitle']);
 });
 
 Route::get('/games',        [GameController::class, 'index'])->name('games.index');
