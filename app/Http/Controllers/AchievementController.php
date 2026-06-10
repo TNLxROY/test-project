@@ -9,10 +9,12 @@ class AchievementController extends Controller
 {
     public function index()
     {
-        $achievements = app(AchievementService::class)->forUser(Auth::user());
+        $service      = app(AchievementService::class);
+        $achievements = $service->forUser(Auth::user());
         $earned       = collect($achievements)->where('earned', true)->count();
         $total        = count($achievements);
+        $titleMap     = $service->titleMap();
 
-        return view('achievements.index', compact('achievements', 'earned', 'total'));
+        return view('achievements.index', compact('achievements', 'earned', 'total', 'titleMap'));
     }
 }

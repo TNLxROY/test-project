@@ -36,6 +36,15 @@
                         <span class="achievement-page-date">Earned {{ $a['earned_at']->format('M j, Y') }}</span>
                     @endif
                 </div>
+                @if(!empty($titleMap[$a['key']]))
+                <div class="achievement-page-reward">
+                    <span class="achievement-page-reward-label">Title unlocked</span>
+                    <span class="achievement-page-reward-title">
+                        <i class="ti ti-tag"></i>
+                        {{ $titleMap[$a['key']] }}
+                    </span>
+                </div>
+                @endif
                 <i class="ti ti-circle-check achievement-page-check"></i>
             </div>
             @endforeach
@@ -71,6 +80,15 @@
                         <span class="achievement-page-desc">{{ $a['desc'] }}</span>
                     @endif
                 </div>
+                @if(!$a['secret'] && !empty($titleMap[$a['key']]))
+                <div class="achievement-page-reward achievement-page-reward--locked">
+                    <span class="achievement-page-reward-label">Title reward</span>
+                    <span class="achievement-page-reward-title achievement-page-reward-title--locked">
+                        <i class="ti ti-tag"></i>
+                        {{ $titleMap[$a['key']] }}
+                    </span>
+                </div>
+                @endif
                 <i class="ti ti-lock" style="color:var(--muted);font-size:1rem;flex-shrink:0"></i>
             </div>
             @endforeach

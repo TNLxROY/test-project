@@ -2585,6 +2585,50 @@ footer{
     font-weight: 500;
 }
 
+/* Achievement reward title — sits between .achievement-page-info and the check/lock icon */
+.achievement-page-reward {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.2rem;
+    margin-left: auto;
+    padding: 0.35rem 0.65rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.achievement-page-reward--locked {
+    opacity: 0.45;
+}
+
+.achievement-page-reward-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+}
+
+.achievement-page-reward-title {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.achievement-page-reward-title .ti {
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+.achievement-page-reward-title--locked {
+    color: var(--muted);
+}
+
 /* ── Suggested games ────────────────────────────────── */
 .suggested-list {
     display: flex;
@@ -2894,6 +2938,48 @@ footer{
     color: #4ade80;
     font-size: 1.2rem;
     flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+    /* Switch card to a 2-column grid: [icon] [info], with reward pill on row 2 */
+    .achievement-page-card {
+        display: grid !important;
+        grid-template-columns: 48px 1fr !important;
+        grid-template-rows: auto auto !important;
+        column-gap: 1rem !important;
+        row-gap: 0.65rem !important;
+        align-items: start !important;
+        position: relative !important;
+        padding-right: 2.25rem !important;
+    }
+
+    .achievement-page-icon {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+    }
+
+    .achievement-page-info {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        min-width: 0 !important;
+    }
+
+    /* Reward pill drops to second row, spanning both columns */
+    .achievement-page-reward {
+        grid-column: 1 / -1 !important;
+        grid-row: 2 !important;
+        margin-left: 0 !important;
+        align-items: flex-start !important;
+        white-space: normal !important;
+    }
+
+    /* Pin check/lock icon to top-right, outside the grid flow */
+    .achievement-page-check,
+    .achievement-page-card > .ti-lock {
+        position: absolute !important;
+        top: 1rem !important;
+        right: 1rem !important;
+    }
 }
 
 .nav-profile-xp-badge {

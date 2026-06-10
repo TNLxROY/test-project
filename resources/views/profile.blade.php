@@ -422,7 +422,7 @@
                         <span class="title-card-source">Secret title — keep playing to discover it.</span>
                     @else
                         <span class="title-card-label" style="color:var(--text-muted)">{{ $t['label'] }}</span>
-                        <span class="title-card-source">Unlock via: {{ $t['achievement'] }}</span>
+                        <span class="title-card-source">Unlock by completing the '{{ $t['achievement'] }}' achievement.</span>
                     @endif
                     <i class="ti ti-lock title-card-lock-icon"></i>
                 </div>
