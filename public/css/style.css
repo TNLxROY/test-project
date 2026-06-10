@@ -10,6 +10,7 @@
     --text:#fff0f0;
     --muted:#888899;
     --card:#16161c;
+    --text-muted:#888899;
 }
 
 body{
@@ -822,7 +823,7 @@ footer{
 }
 .detail-row:last-child { border-bottom: none; }
 .detail-row dt { color: var(--muted); flex-shrink: 0; }
-.detail-row dd { color: var(--text); text-align: right; font-weight: 500; }
+.detail-row dd { color: var(--text); text-align: right; font-weight: 500; word-break: break-word; overflow-wrap: anywhere; }
 .detail-link { color: var(--accent2); text-decoration: none; }
 .detail-link:hover { text-decoration: underline; }
 
@@ -1110,7 +1111,7 @@ footer{
     font-size: 1.8rem;
     font-weight: 800;
     letter-spacing: -0.5px;
-    margin-bottom: 0.2rem;
+    margin-bottom: 0.35rem;
 }
 .profile-email {
     font-size: 0.88rem;
@@ -1121,6 +1122,7 @@ footer{
     font-size: 0.78rem;
     color: var(--muted);
     opacity: 0.7;
+    margin-bottom: 0.35rem;
 }
 
 .profile-layout {
@@ -1315,14 +1317,20 @@ footer{
     color: var(--accent2);
 }
 .review-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background: var(--accent);
     color: #fff;
     font-size: .68rem;
     font-weight: 700;
-    padding: .1rem .4rem;
+    line-height: 1;
+    padding: 0 5px;
     border-radius: 100px;
     min-width: 18px;
+    height: 18px;
     text-align: center;
+    vertical-align: middle;
 }
 .reviewed-badge {
     display: flex;
@@ -3643,6 +3651,43 @@ footer{
     padding: .2rem .65rem;
 }
 
+/* Badge sitting in the profile hero gets vertical breathing room */
+#profile-hero-title.title-badge--active {
+    display: block;
+    margin-bottom: .75rem;
+    max-width: 280px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: default;
+}
+
+/* JS-rendered tooltip for truncated hero title */
+#profile-hero-title-tooltip {
+    position: fixed;
+    background: var(--bg4);
+    color: var(--text);
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    padding: .3rem .65rem;
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+    font-family: 'DM Sans', sans-serif;
+    text-transform: uppercase;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity .15s ease, transform .15s ease;
+    z-index: 9999;
+}
+
+#profile-hero-title-tooltip.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
 /* Active-title display row */
 .title-active-display {
     display: flex;
@@ -3652,12 +3697,18 @@ footer{
     min-height: 2rem;
 }
 
+.title-active-display .title-badge {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    flex-basis: 100%;
+}
+
 /* Titles grid */
 .titles-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: .75rem;
-    margin-top: .5rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: .75rem;
 }
 
 /* Individual title card */
@@ -3665,14 +3716,16 @@ footer{
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: .25rem;
-    padding: .85rem 1rem;
-    border-radius: 8px;
+    gap: .4rem;
+    padding: 1.1rem 1.25rem;
+    border-radius: 10px;
     border: 1px solid var(--border);
-    background: var(--surface);
+    background: var(--bg3);
     transition: border-color .15s, background .15s, transform .1s;
     cursor: default;
     text-align: left;
+    min-height: 80px;
+    overflow: visible;
 }
 
 .title-card--unlocked {
@@ -3681,13 +3734,13 @@ footer{
 
 .title-card--unlocked:hover {
     border-color: var(--accent);
-    background: color-mix(in srgb, var(--accent) 5%, var(--surface));
+    background: color-mix(in srgb, var(--accent) 5%, var(--bg3));
     transform: translateY(-1px);
 }
 
 .title-card--equipped {
     border-color: var(--accent) !important;
-    background: color-mix(in srgb, var(--accent) 10%, var(--surface)) !important;
+    background: color-mix(in srgb, var(--accent) 10%, var(--bg3)) !important;
     box-shadow: 0 0 0 1px var(--accent);
 }
 
@@ -3695,24 +3748,36 @@ footer{
     opacity: .55;
 }
 
+.title-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: .5rem;
+}
+
 .title-card-label {
-    font-size: .95rem;
+    font-size: 1.05rem;
     font-weight: 700;
     color: var(--text);
     letter-spacing: .02em;
     line-height: 1.2;
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .title-card-source {
-    font-size: .75rem;
+    font-size: .82rem;
     color: var(--text-muted);
-    line-height: 1.4;
+    line-height: 1.5;
 }
 
 .title-card-equipped-chip {
-    position: absolute;
-    top: .45rem;
-    right: .55rem;
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    align-self: flex-start;
     font-size: .65rem;
     font-weight: 700;
     letter-spacing: .07em;
@@ -3723,6 +3788,7 @@ footer{
     padding: .1rem .4rem;
     border-radius: 3px;
     line-height: 1.4;
+    white-space: nowrap;
 }
 
 .title-card-lock-icon {

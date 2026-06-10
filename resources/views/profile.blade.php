@@ -22,6 +22,9 @@
 
             <div>
                 <h1 class="profile-name" id="profile-display-name">{{ $user->name }}</h1>
+                @if($user->active_title)
+                    <span class="title-badge title-badge--active" id="profile-hero-title" data-title-full="{{ $user->active_title }}">{{ $user->active_title }}</span>
+                @endif
                 <p class="profile-email">{{ $user->email }}</p>
                 <p class="profile-joined">Member since {{ $user->created_at->format('F Y') }}</p>
                 @if($user->avatar)
@@ -362,7 +365,7 @@
                 <div class="title-active-display" id="title-active-display">
                     @if($user->active_title)
                         <span class="title-badge title-badge--active">{{ $user->active_title }}</span>
-                        <button class="btn btn-ghost btn-sm" data-action="clear-title" style="margin-left:.75rem;font-size:.75rem">
+                        <button class="btn btn-ghost btn-sm" data-action="clear-title" style="font-size:.75rem">
                             Remove
                         </button>
                     @else
@@ -390,11 +393,13 @@
                         data-action="equip-title"
                         data-title="{{ $t['label'] }}"
                         title="Equip: {{ $t['label'] }}">
-                    <span class="title-card-label">{{ $t['label'] }}</span>
-                    <span class="title-card-source">{{ $t['achievement'] }}</span>
-                    @if($user->active_title === $t['label'])
-                        <span class="title-card-equipped-chip">Equipped</span>
-                    @endif
+                    <div class="title-card-header">
+                        <span class="title-card-label">{{ $t['label'] }}</span>
+                        @if($user->active_title === $t['label'])
+                            <span class="title-card-equipped-chip">Equipped</span>
+                        @endif
+                    </div>
+                    <span class="title-card-source">Unlocked by completing the '{{ $t['achievement'] }}' achievement.</span>
                 </button>
                 @endforeach
             </div>

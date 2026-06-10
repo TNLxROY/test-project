@@ -127,16 +127,16 @@ class AchievementService
     public function titleMap(): array
     {
         return [
-            'first_review'  => 'First Words',
+            'first_review'  => 'Basically a proffessional',
             'review_5'      => 'Critic',
             'review_10'     => 'Seasoned Reviewer',
             'review_25'     => 'Fact Speaker',
             'review_50'     => 'Legendary Critic',
-            'first_friend'  => 'Making Friends',
+            'first_friend'  => 'We\'re having soft taco\'s later',
             'friends_5'     => 'Social Gamer',
             'friends_10'    => 'Community Pillar',
             'avatar_set'    => 'Face of the Community',
-            'early_adopter' => 'Early Adopter',
+            'early_adopter' => '\' Beater \'',
         ];
     }
 

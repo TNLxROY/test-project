@@ -1344,7 +1344,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const c = document.createElement('span');
                 c.className = 'title-card-equipped-chip';
                 c.textContent = 'Equipped';
-                card.appendChild(c);
+                const header = card.querySelector('.title-card-header');
+                (header || card).appendChild(c);
             } else if (!equipped && chip) {
                 chip.remove();
             }
@@ -1355,7 +1356,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (display) {
             if (label) {
                 display.innerHTML = `<span class="title-badge title-badge--active">${label}</span>
-                    <button class="btn btn-ghost btn-sm" data-action="clear-title" style="margin-left:.75rem;font-size:.75rem">Remove</button>`;
+                    <button class="btn btn-ghost btn-sm" data-action="clear-title" style="font-size:.75rem">Remove</button>`;
             } else {
                 display.innerHTML = `<span style="color:var(--text-muted);font-size:.875rem">No title equipped — pick one below.</span>`;
             }
@@ -1365,8 +1366,76 @@ document.addEventListener('DOMContentLoaded', () => {
         const sidebarTitle = document.getElementById('sidebar-active-title');
         if (sidebarTitle) sidebarTitle.textContent = label || '—';
 
+        // Update hero badge
+        const heroBadge = document.getElementById('profile-hero-title');
+        if (label) {
+            if (heroBadge) {
+                heroBadge.textContent = label;
+                heroBadge.dataset.titleFull = label;
+            } else {
+                const badge = document.createElement('span');
+                badge.className = 'title-badge title-badge--active';
+                badge.id = 'profile-hero-title';
+                badge.textContent = label;
+                badge.dataset.titleFull = label;
+                const nameEl = document.getElementById('profile-display-name');
+                if (nameEl) nameEl.insertAdjacentElement('afterend', badge);
+            }
+        } else {
+            if (heroBadge) heroBadge.remove();
+        }
+        syncHeroBadgeTruncation();
+
         showProfileNotif(label ? `Title equipped: "${label}"` : 'Title removed.');
     }
+
+    function syncHeroBadgeTruncation() {
+        const badge = document.getElementById('profile-hero-title');
+        if (!badge) return;
+        badge.style.maxWidth = 'none';
+        const natural = badge.getBoundingClientRect().width;
+        badge.style.maxWidth = '';
+        badge.classList.toggle('is-truncated', natural > 280);
+    }
+
+    // Tooltip logic — appends a fixed div to body so overflow:hidden can't clip it
+    (function setupHeroTitleTooltip() {
+        let tip = document.getElementById('profile-hero-title-tooltip');
+        if (!tip) {
+            tip = document.createElement('div');
+            tip.id = 'profile-hero-title-tooltip';
+            document.body.appendChild(tip);
+        }
+
+        let showTimer, hideTimer;
+
+        document.addEventListener('mouseover', (e) => {
+            const badge = e.target.closest('#profile-hero-title.is-truncated');
+            if (!badge) return;
+            clearTimeout(hideTimer);
+            tip.textContent = badge.dataset.titleFull || badge.textContent;
+            const rect = badge.getBoundingClientRect();
+            tip.style.left = rect.left + 'px';
+            tip.style.top  = (rect.top - tip.offsetHeight - 8) + 'px';
+            showTimer = setTimeout(() => {
+                // Recalc vertical position now tip has height
+                tip.style.top = (rect.top - tip.offsetHeight - 8) + 'px';
+                tip.classList.add('visible');
+            }, 10);
+        });
+
+        document.addEventListener('mouseout', (e) => {
+            const badge = e.target.closest('#profile-hero-title');
+            if (!badge) return;
+            clearTimeout(showTimer);
+            tip.classList.remove('visible');
+        });
+    })();
+
+    // Run once on page load
+    document.addEventListener('DOMContentLoaded', syncHeroBadgeTruncation);
+    // Also run after fonts/layout settle
+    window.addEventListener('load', syncHeroBadgeTruncation);
 
     // ── Event delegation — wires all data-action attributes ──────────────
     document.addEventListener('click', (e) => {
