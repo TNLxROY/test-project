@@ -3614,7 +3614,7 @@ footer{
 }
 
 
-/* ── Player about banner (show.blade — fav game + bio) ─────────────────── */
+/* ── Player about banner (show.blade — fav game + bio) ────────────── */
 .player-about-banner-wrap {
     max-width: 1100px;
     margin: 1.5rem auto .25rem;
