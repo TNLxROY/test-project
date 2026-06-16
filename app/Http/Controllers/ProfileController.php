@@ -11,24 +11,69 @@ use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use App\Services\XpService;
 use App\Services\AchievementService;
+use App\Services\RawgService;
 
 class ProfileController extends Controller
 {
-    public function show(XpService $xpService, AchievementService $achievementService)
+    public function show(XpService $xpService, AchievementService $achievementService, RawgService $rawgService)
     {
         $user      = Auth::user();
         $userLevel = $xpService->getOrCreate($user);
         $reviews   = \App\Models\Review::where('user_id', $user->id)
             ->latest()
             ->get();
-        $titles    = $achievementService->titlesForUser($user);
+        $titles     = $achievementService->titlesForUser($user);
+        $genreStats = $this->buildGenreStats($reviews, $rawgService);
 
         return view('profile', [
-            'user'      => $user,
-            'userLevel' => $userLevel,
-            'reviews'   => $reviews,
-            'titles'    => $titles,
+            'user'       => $user,
+            'userLevel'  => $userLevel,
+            'reviews'    => $reviews,
+            'titles'     => $titles,
+            'genreStats' => $genreStats,
         ]);
+    }
+
+    /**
+     * Build the "reviews per genre" breakdown for the profile's Genres tab.
+     * Always returns every genre RAWG knows about (count 0 if the user
+     * hasn't reviewed anything in that genre yet), sorted by review count
+     * descending, with each entry's bar width pre-computed relative to
+     * the user's most-reviewed genre.
+     */
+    private function buildGenreStats($reviews, RawgService $rawgService): array
+    {
+        $counts = [];
+
+        foreach ($reviews as $review) {
+            foreach ($review->genres ?? [] as $genre) {
+                $name = $genre['name'] ?? null;
+                if (!$name) {
+                    continue;
+                }
+                $counts[$name] = ($counts[$name] ?? 0) + 1;
+            }
+        }
+
+        $maxCount = empty($counts) ? 0 : max($counts);
+
+        $stats = collect($rawgService->getGenres())
+            ->map(function ($genre) use ($counts, $maxCount) {
+                $count = $counts[$genre['name']] ?? 0;
+
+                return [
+                    'id'      => $genre['id'],
+                    'name'    => $genre['name'],
+                    'slug'    => $genre['slug'],
+                    'count'   => $count,
+                    'percent' => $maxCount > 0 ? (int) round(($count / $maxCount) * 100) : 0,
+                ];
+            })
+            ->all();
+
+        usort($stats, fn ($a, $b) => $b['count'] <=> $a['count'] ?: strcmp($a['name'], $b['name']));
+
+        return $stats;
     }
 
     public function updateName(Request $request)

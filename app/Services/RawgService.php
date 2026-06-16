@@ -15,6 +15,7 @@ class RawgService
     const TTL_SEARCH   = 300;    // search results: 5 min  (user-specific, keep fresh)
     const TTL_GAME     = 86400;  // single game detail: 24 hours (very stable data)
     const TTL_STORES   = 86400;  // store links: 24 hours
+    const TTL_GENRES   = 604800; // genre list: 7 days (effectively static reference data)
 
     public function __construct()
     {
@@ -91,6 +92,25 @@ class RawgService
 
         return Cache::remember($key, self::TTL_STORES, function () use ($id) {
             return $this->request("games/{$id}/stores") ?? [];
+        });
+    }
+
+    // GENRES (full canonical list — used to show every possible genre,
+    // not just ones the user has already reviewed)
+    public function getGenres(): array
+    {
+        return Cache::remember('rawg.genres', self::TTL_GENRES, function () {
+            $data = $this->request('genres');
+
+            return collect($data['results'] ?? [])
+                ->map(fn ($g) => [
+                    'id'   => $g['id']   ?? null,
+                    'name' => $g['name'] ?? '',
+                    'slug' => $g['slug'] ?? null,
+                ])
+                ->filter(fn ($g) => $g['id'] !== null && $g['name'] !== '')
+                ->values()
+                ->all();
         });
     }
 }

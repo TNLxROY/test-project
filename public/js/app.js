@@ -954,7 +954,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Tab switching ─────────────────────────────────────────────────────
     function switchProfileTab(tab) {
-        ['about', 'reviews', 'titles', 'settings'].forEach(t => {
+        ['about', 'reviews', 'genres', 'titles', 'settings'].forEach(t => {
             document.getElementById('tab-' + t)?.classList.toggle('active', t === tab);
             const panel = document.getElementById('panel-' + t);
             if (panel) panel.style.display = t === tab ? '' : 'none';

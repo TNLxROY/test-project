@@ -15,12 +15,14 @@ class Review extends Model
         'rating',
         'categories',
         'is_detailed',
+        'genres',
     ];
 
     protected $casts = [
         'rating'      => 'decimal:2',
         'categories'  => 'array',
         'is_detailed' => 'boolean',
+        'genres'      => 'array',
     ];
 
     public function user()

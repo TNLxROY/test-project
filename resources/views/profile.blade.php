@@ -92,6 +92,13 @@
                     <span class="review-count-chip">{{ $userLevel->review_count }}</span>
                 @endif
             </button>
+            <button class="show-tab" id="tab-genres" data-profile-tab="genres">
+                <i class="ti ti-chart-bar" aria-hidden="true"></i> Genres
+                @php $genresExploredCount = collect($genreStats ?? [])->where('count', '>', 0)->count(); @endphp
+                @if($genresExploredCount > 0)
+                    <span class="review-count-chip">{{ $genresExploredCount }}</span>
+                @endif
+            </button>
             <button class="show-tab" id="tab-titles" data-profile-tab="titles">
                 <i class="ti ti-tag" aria-hidden="true"></i> Titles
                 @php $unlockedTitles = collect($titles ?? [])->where('unlocked', true); @endphp
@@ -342,6 +349,59 @@
 
 </div>
 </div>{{-- /#panel-reviews --}}
+
+
+{{-- ── PANEL: GENRES ─────────────────────────────────────────────────────── --}}
+<div id="panel-genres" style="display:none">
+<div class="show-layout">
+
+    <div class="show-main">
+        <div class="show-card">
+            <h2 class="show-card-title">Reviews by Genre</h2>
+
+            @if($reviews->count() === 0)
+                <p style="color:var(--text-muted);margin:0 0 1rem">
+                    You haven't written any reviews yet — once you do, your genre breakdown will show up here.
+                </p>
+            @endif
+
+            <div class="ratings-row">
+                @foreach($genreStats as $g)
+                <div class="rating-bar-item">
+                    <div class="rating-bar-label">
+                        <span>{{ $g['name'] }}</span>
+                        <span class="rating-bar-count">{{ $g['count'] }}</span>
+                    </div>
+                    <div class="rating-bar-track">
+                        <div class="rating-bar-fill" style="width: {{ $g['percent'] }}%; background: var(--accent)"></div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+
+    <div class="show-sidebar">
+        <div class="show-card">
+            <h2 class="show-card-title">Genre Stats</h2>
+            <dl class="detail-list">
+                <div class="detail-row">
+                    <dt>Genres explored</dt>
+                    <dd>{{ $genresExploredCount }} / {{ count($genreStats) }}</dd>
+                </div>
+                @php $topGenre = collect($genreStats)->first(fn($g) => $g['count'] > 0); @endphp
+                @if($topGenre)
+                <div class="detail-row">
+                    <dt>Most reviewed</dt>
+                    <dd>{{ $topGenre['name'] }} ({{ $topGenre['count'] }})</dd>
+                </div>
+                @endif
+            </dl>
+        </div>
+    </div>
+
+</div>
+</div>{{-- /#panel-genres --}}
 
 
 {{-- ── PANEL: TITLES ─────────────────────────────────────────────────────── --}}
