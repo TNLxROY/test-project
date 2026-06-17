@@ -6,6 +6,7 @@
         <a href="/games">Games</a>
         <a style="color:var(--muted)">News</a>
         <a href="{{ route('users.index') }}">Users</a>
+        <a href="{{ route('rulesets.create') }}">Rulesets</a>
     </div>
     <div class="nav-right">
         <button class="hamburger" id="hamburger" aria-label="Toggle menu">

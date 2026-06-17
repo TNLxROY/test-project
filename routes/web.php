@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ReviewVoteController;
+use App\Http\Controllers\RulesetController;
 
 Route::get('/', function () {
     return view('home');
@@ -83,3 +84,8 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::get('/achievements', [App\Http\Controllers\AchievementController::class, 'index'])->name('achievements.index');
+
+Route::middleware('auth')->group(function () {
+    Route::resource('rulesets', RulesetController::class)->except(['index']);
+    Route::get('/api/games/search', [RulesetController::class, 'searchGames'])->name('api.games.search');
+});
