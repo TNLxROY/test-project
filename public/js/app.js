@@ -1615,3 +1615,310 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
+
+// ============================================================
+// CHALLENGES — INDEX PAGE (game search)
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+    if (!document.getElementById('challenges-search-input')) return;
+
+    const searchInput    = document.getElementById('challenges-search-input');
+    const inlineResults  = document.getElementById('challenges-results');
+    const spinner        = document.getElementById('challenges-spinner');
+    const popularSection = document.getElementById('popular-section');
+    const searchSection  = document.getElementById('search-results-section');
+    const searchGrid     = document.getElementById('search-results-grid');
+    const countNum       = document.getElementById('results-count-num');
+    const clearBtn       = document.getElementById('clear-search-btn');
+
+    let searchTimeout;
+
+    searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        const q = searchInput.value.trim();
+        if (q.length < 2) { inlineResults.style.display = 'none'; return; }
+
+        searchTimeout = setTimeout(async () => {
+            spinner.style.display = 'flex';
+            try {
+                const res   = await authFetch('/api/games/search?q=' + encodeURIComponent(q));
+                const data  = await res.json();
+                const games = data.results || [];
+                renderInlineResults(games);
+                renderGridResults(games);
+            } catch (err) {
+                console.error('Challenge search error:', err);
+            } finally {
+                spinner.style.display = 'none';
+            }
+        }, 350);
+    });
+
+    function gameUrl(id) {
+        return '/challenges/game/' + id;
+    }
+
+    function renderInlineResults(games) {
+        if (!games.length) {
+            inlineResults.innerHTML = '<div class="challenges-no-results">No games found</div>';
+            inlineResults.style.display = 'block';
+            return;
+        }
+        inlineResults.innerHTML = games.slice(0, 6).map(g => {
+            const thumb  = g.background_image ? `<img src="${esc(g.background_image)}" alt="">` : '🎮';
+            const year   = g.released ? g.released.slice(0, 4) : '';
+            const rating = g.rating   ? `★ ${parseFloat(g.rating).toFixed(1)}` : '';
+            const meta   = [year, rating].filter(Boolean).join(' · ');
+            return `<a href="${gameUrl(g.id)}" class="challenges-result-item">
+                <div class="challenges-result-thumb">${thumb}</div>
+                <div class="challenges-result-info">
+                    <span class="challenges-result-name">${esc(g.name)}</span>
+                    ${meta ? `<span class="challenges-result-meta">${esc(meta)}</span>` : ''}
+                </div>
+                <svg class="challenges-result-arrow" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+            </a>`;
+        }).join('');
+        inlineResults.style.display = 'block';
+    }
+
+    function renderGridResults(games) {
+        countNum.textContent = games.length;
+        searchGrid.innerHTML = games.length
+            ? games.map(g => {
+                const img    = g.background_image ? `<img src="${esc(g.background_image)}" alt="${esc(g.name)}" loading="lazy">` : '';
+                const rating = g.rating ? `<div class="rating-badge"><span class="star">★</span> ${parseFloat(g.rating).toFixed(1)}</div>` : '';
+                const genres = (g.genres || []).slice(0, 3).map(genre => `<span class="genre-pill">${esc(genre.name)}</span>`).join('');
+                const year   = g.released ? g.released.slice(0, 4) : '—';
+                return `<a href="${gameUrl(g.id)}" class="game-card">
+                    <div class="card-img">${img}${rating}</div>
+                    <div class="card-body">
+                        <div class="card-title">${esc(g.name)}</div>
+                        <div class="genre-pills">${genres}</div>
+                        <hr class="divider-line">
+                        <div class="card-meta">
+                            <div class="meta-item"><span class="meta-label">Released</span><span class="meta-value">${year}</span></div>
+                        </div>
+                    </div>
+                </a>`;
+            }).join('')
+            : '<p style="color:var(--muted);font-size:.9rem;grid-column:1/-1">No games found for that search.</p>';
+
+        popularSection.style.display = 'none';
+        searchSection.style.display  = 'block';
+    }
+
+    clearBtn.addEventListener('click', () => {
+        searchInput.value            = '';
+        inlineResults.style.display  = 'none';
+        searchSection.style.display  = 'none';
+        popularSection.style.display = 'block';
+        searchInput.focus();
+    });
+
+    document.addEventListener('click', e => {
+        if (!e.target.closest('#challenges-search-wrap')) {
+            inlineResults.style.display = 'none';
+        }
+    });
+});
+
+
+// ============================================================
+// RULESET CREATE PAGE
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+    if (!document.getElementById('ruleset-form')) return;
+
+    // ── Game search ───────────────────────────────────────────
+    const searchInput    = document.getElementById('game-search-input');
+    const resultsBox     = document.getElementById('game-results');
+    const spinner        = document.getElementById('search-spinner');
+    const rawgIdInput    = document.getElementById('rawg-id');
+    const gameNameInput  = document.getElementById('game-name');
+    const gameImageInput = document.getElementById('game-image');
+    const gameSelected   = document.getElementById('game-selected');
+    const selectedImg    = document.getElementById('game-selected-img');
+    const selectedName   = document.getElementById('game-selected-name');
+    const gameClear      = document.getElementById('game-clear');
+
+    let searchTimeout;
+
+    searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        const q = searchInput.value.trim();
+        if (q.length < 2) { resultsBox.style.display = 'none'; return; }
+
+        searchTimeout = setTimeout(async () => {
+            spinner.style.display = 'flex';
+            try {
+                const res  = await authFetch('/api/games/search?q=' + encodeURIComponent(q));
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+                renderResults(data.results || []);
+            } catch (err) {
+                resultsBox.innerHTML = '<div class="ruleset-no-results">Something went wrong — try again.</div>';
+                resultsBox.style.display = 'block';
+                console.error('Game search error:', err);
+            } finally {
+                spinner.style.display = 'none';
+            }
+        }, 350);
+    });
+
+    function renderResults(games) {
+        if (!games.length) {
+            resultsBox.innerHTML = '<div class="ruleset-no-results">No games found</div>';
+            resultsBox.style.display = 'block';
+            return;
+        }
+        resultsBox.innerHTML = games.slice(0, 8).map(g => {
+            const thumb = g.background_image
+                ? `<img src="${esc(g.background_image)}" alt="">`
+                : '<div class="ruleset-result-thumb-placeholder">🎮</div>';
+            const year = g.released ? `<span class="ruleset-result-year">${g.released.slice(0, 4)}</span>` : '';
+            return `<button type="button" class="ruleset-result-item"
+                data-id="${esc(String(g.id))}" data-name="${esc(g.name)}" data-img="${esc(g.background_image || '')}">
+                <div class="ruleset-result-thumb">${thumb}</div>
+                <div class="ruleset-result-info">
+                    <span class="ruleset-result-name">${esc(g.name)}</span>${year}
+                </div>
+            </button>`;
+        }).join('');
+        resultsBox.style.display = 'block';
+
+        resultsBox.querySelectorAll('.ruleset-result-item').forEach(btn => {
+            btn.addEventListener('click', () => selectGame(btn.dataset.id, btn.dataset.name, btn.dataset.img));
+        });
+    }
+
+    function selectGame(id, name, img) {
+        rawgIdInput.value    = id;
+        gameNameInput.value  = name;
+        gameImageInput.value = img;
+        selectedImg.src           = img || '';
+        selectedImg.style.display = img ? 'block' : 'none';
+        selectedName.textContent  = name;
+        resultsBox.style.display  = 'none';
+        searchInput.style.display = 'none';
+        gameSelected.style.display = 'flex';
+    }
+
+    gameClear.addEventListener('click', () => {
+        rawgIdInput.value = gameNameInput.value = gameImageInput.value = '';
+        searchInput.value          = '';
+        searchInput.style.display  = '';
+        gameSelected.style.display = 'none';
+        searchInput.focus();
+    });
+
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.ruleset-game-search-wrap')) resultsBox.style.display = 'none';
+    });
+
+    // ── Rules builder ─────────────────────────────────────────
+    const rulesList  = document.getElementById('rules-list');
+    const addRuleBtn = document.getElementById('add-rule-btn');
+
+    function getRuleRows() { return rulesList.querySelectorAll('.ruleset-rule-row'); }
+
+    function renumberRules() {
+        const rows = getRuleRows();
+        rows.forEach((row, i) => {
+            row.querySelector('.ruleset-rule-num').textContent = i + 1;
+            row.querySelector('.ruleset-rule-remove').style.display = rows.length > 1 ? 'flex' : 'none';
+        });
+    }
+
+    function bindRemoveBtn(row) {
+        row.querySelector('.ruleset-rule-remove').addEventListener('click', () => {
+            row.remove();
+            renumberRules();
+        });
+    }
+
+    function createRuleRow() {
+        const div = document.createElement('div');
+        div.className = 'ruleset-rule-row';
+        div.innerHTML = `
+            <span class="ruleset-rule-num"></span>
+            <input type="text" name="rules[]" class="ruleset-input ruleset-rule-input" placeholder="Describe this rule…" maxlength="300">
+            <button type="button" class="ruleset-rule-remove" title="Remove rule">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>`;
+        bindRemoveBtn(div);
+        return div;
+    }
+
+    getRuleRows().forEach(row => bindRemoveBtn(row));
+
+    addRuleBtn.addEventListener('click', () => {
+        const row = createRuleRow();
+        rulesList.appendChild(row);
+        renumberRules();
+        row.querySelector('input').focus();
+    });
+
+    renumberRules();
+
+    // ── Description char counter ──────────────────────────────
+    const descTextarea = document.getElementById('description');
+    const descCount    = document.getElementById('desc-count');
+    if (descTextarea && descCount) {
+        const update = () => { descCount.textContent = descTextarea.value.length; };
+        descTextarea.addEventListener('input', update);
+        update();
+    }
+
+    // ── Visibility radio cards ────────────────────────────────
+    document.querySelectorAll('.ruleset-radio-card').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('.ruleset-radio-card').forEach(c => c.classList.remove('is-selected'));
+            card.classList.add('is-selected');
+            const radio = card.querySelector('input[type="radio"]');
+            if (radio) radio.checked = true;
+        });
+    });
+
+    // ── Submit guard ──────────────────────────────────────────
+    document.getElementById('ruleset-form').addEventListener('submit', e => {
+        if (!rawgIdInput.value) {
+            e.preventDefault();
+            searchInput.classList.add('is-error');
+            searchInput.style.display = '';
+            searchInput.focus();
+            searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+});
+
+
+// ============================================================
+// RULESET SHOW PAGE — delete confirmation modal
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+    const deleteBtn  = document.getElementById('delete-ruleset-btn');
+    if (!deleteBtn) return;
+
+    const modal      = document.getElementById('delete-modal');
+    const cancelBtn  = document.getElementById('delete-cancel-btn');
+    const confirmBtn = document.getElementById('delete-confirm-btn');
+    const deleteForm = document.getElementById('delete-ruleset-form');
+
+    deleteBtn.addEventListener('click', () => { modal.style.display = 'flex'; });
+    cancelBtn.addEventListener('click', () => { modal.style.display = 'none'; });
+    modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+    confirmBtn.addEventListener('click', () => { deleteForm.submit(); });
+});
+
+
+// ============================================================
+// SHARED UTILITY
+// ============================================================
+function esc(str) {
+    return String(str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}

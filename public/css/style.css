@@ -4328,3 +4328,496 @@ footer{
     line-height: 1.5;
     margin-top: .25rem;
 }
+
+/* ── Toolbar ──────────────────────────────────────────────────── */
+.cgame-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    gap: 1rem;
+}
+.cgame-count { font-size: .87rem; color: var(--muted); }
+.cgame-create-btn {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    flex-shrink: 0;
+    text-decoration: none;
+}
+
+/* ── Ruleset cards ────────────────────────────────────────────── */
+.cgame-rulesets-list { display: flex; flex-direction: column; gap: .85rem; }
+
+.cgame-ruleset-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.35rem 1.5rem;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transition: border-color .18s, transform .18s, box-shadow .18s;
+}
+.cgame-ruleset-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(232,25,44,.1);
+}
+
+.cgame-ruleset-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: .75rem;
+    margin-bottom: .5rem;
+}
+.cgame-ruleset-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--text);
+}
+.cgame-ruleset-count {
+    font-size: .72rem;
+    font-weight: 600;
+    background: rgba(232,25,44,.1);
+    border: 1px solid rgba(232,25,44,.22);
+    color: var(--accent2);
+    border-radius: 5px;
+    padding: .15rem .45rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.cgame-ruleset-desc {
+    font-size: .85rem;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.cgame-ruleset-rules-preview {
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: .85rem 1rem;
+}
+.cgame-ruleset-rule-snippet {
+    display: flex;
+    align-items: flex-start;
+    gap: .65rem;
+    font-size: .82rem;
+    color: var(--muted);
+    line-height: 1.5;
+}
+.cgame-ruleset-rule-num {
+    font-family: 'Syne', sans-serif;
+    font-size: .7rem;
+    font-weight: 800;
+    color: var(--accent);
+    min-width: 1.2rem;
+    flex-shrink: 0;
+    padding-top: .1rem;
+}
+.cgame-ruleset-rule-more {
+    font-size: .75rem;
+    color: var(--muted);
+    padding-top: .25rem;
+    border-top: 1px solid var(--border);
+    margin-top: .1rem;
+}
+
+.cgame-ruleset-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding-top: .75rem;
+    border-top: 1px solid var(--border);
+}
+.cgame-ruleset-author {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .8rem;
+    color: var(--muted);
+}
+.cgame-ruleset-meta-right {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+.cgame-ruleset-date { font-size: .75rem; color: var(--muted); }
+.cgame-ruleset-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    font-size: .7rem;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 5px;
+    padding: .15rem .45rem;
+}
+
+/* ── Empty state ──────────────────────────────────────────────── */
+.cgame-empty {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 3.5rem 2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.cgame-empty-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+.cgame-empty-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: .5rem;
+}
+.cgame-empty-sub { font-size: .87rem; color: var(--muted); line-height: 1.6; max-width: 320px; }
+
+/* ── CTA sidebar card ─────────────────────────────────────────── */
+.cgame-cta-card { text-align: center; display: flex; flex-direction: column; align-items: center; gap: .6rem; }
+.cgame-cta-icon { font-size: 1.8rem; }
+.cgame-cta-title { font-family: 'Syne', sans-serif; font-size: .95rem; font-weight: 700; }
+.cgame-cta-sub { font-size: .8rem; color: var(--muted); line-height: 1.55; }
+.cgame-cta-btn { display: flex; align-items: center; gap: .4rem; margin-top: .4rem; text-decoration: none; }
+
+/* ── Pagination ───────────────────────────────────────────────── */
+.cgame-pagination { margin-top: 1.5rem; }
+.cgame-pagination .pagination { display: flex; gap: .4rem; justify-content: center; flex-wrap: wrap; }
+.cgame-pagination .page-item .page-link {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 8px;
+    padding: .4rem .75rem;
+    font-size: .83rem;
+    text-decoration: none;
+    transition: all .15s;
+    display: block;
+}
+.cgame-pagination .page-item.active .page-link { background: var(--accent); border-color: var(--accent); color: #fff; }
+.cgame-pagination .page-item .page-link:hover { border-color: var(--accent); color: var(--text); }
+
+/* ── Challenges hero ──────────────────────────────────────────── */
+.challenges-hero {
+    padding: 5rem 2rem 4rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.challenges-hero::before {
+    content: '';
+    position: absolute;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 700px;
+    height: 400px;
+    background: radial-gradient(ellipse at center, rgba(232,25,44,.12) 0%, transparent 70%);
+    pointer-events: none;
+}
+.challenges-hero-inner {
+    max-width: 700px;
+    margin: 0 auto;
+    position: relative;
+}
+.challenges-hero-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    line-height: 1.1;
+    margin: .75rem 0 1rem;
+}
+.challenges-hero-title em { color: var(--accent); font-style: normal; }
+.challenges-hero-sub {
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+}
+
+/* ── Search box ───────────────────────────────────────────────── */
+.challenges-search-wrap { position: relative; }
+.challenges-search-box {
+    display: flex;
+    align-items: center;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: .9rem 1.1rem;
+    gap: .75rem;
+    transition: border-color .2s, box-shadow .2s;
+}
+.challenges-search-box:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(232,25,44,.1);
+}
+.challenges-search-icon { color: var(--muted); flex-shrink: 0; }
+.challenges-search-input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+}
+.challenges-search-input::placeholder { color: var(--muted); }
+.challenges-search-spinner { flex-shrink: 0; display: flex; align-items: center; }
+
+.challenges-search-results {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    z-index: 50;
+    box-shadow: 0 16px 48px rgba(0,0,0,.5);
+    max-height: 420px;
+    overflow-y: auto;
+    text-align: left;
+}
+.challenges-result-item {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+    width: 100%;
+    padding: .75rem 1rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    text-decoration: none;
+    transition: background .15s;
+}
+.challenges-result-item + .challenges-result-item { border-top: 1px solid var(--border); }
+.challenges-result-item:hover { background: rgba(255,255,255,.04); }
+
+.challenges-result-thumb {
+    width: 56px;
+    height: 38px;
+    border-radius: 7px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: var(--bg3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+.challenges-result-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.challenges-result-info { display: flex; flex-direction: column; gap: .15rem; flex: 1; min-width: 0; }
+.challenges-result-name { font-size: .9rem; font-weight: 600; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.challenges-result-meta { font-size: .75rem; color: var(--muted); display: flex; gap: .6rem; }
+.challenges-result-arrow { color: var(--muted); flex-shrink: 0; }
+.challenges-no-results { padding: 1.5rem; text-align: center; color: var(--muted); font-size: .87rem; }
+
+/* ── Show-page specific styles ───────────────────────────────── */
+.ruleset-back {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    color: rgba(255,255,255,.6);
+    font-size: .83rem;
+    text-decoration: none;
+    transition: color .15s;
+}
+.ruleset-back:hover { color: #fff; }
+
+.ruleset-show-description {
+    font-size: .93rem;
+    color: var(--muted);
+    line-height: 1.75;
+}
+
+/* Rules list */
+.show-card-title {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+.ruleset-show-rule-count {
+    font-family: 'DM Sans', sans-serif;
+    font-size: .72rem;
+    font-weight: 600;
+    background: rgba(232,25,44,.12);
+    border: 1px solid rgba(232,25,44,.25);
+    color: var(--accent2);
+    border-radius: 5px;
+    padding: .1rem .4rem;
+    letter-spacing: 0;
+    text-transform: none;
+}
+.ruleset-show-rules {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    counter-reset: none;
+}
+.ruleset-show-rule-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: .85rem 0;
+    border-bottom: 1px solid var(--border);
+}
+.ruleset-show-rule-item:last-child { border-bottom: none; }
+
+.ruleset-show-rule-num {
+    font-family: 'Syne', sans-serif;
+    font-size: .75rem;
+    font-weight: 800;
+    color: var(--accent);
+    min-width: 1.6rem;
+    padding-top: .1rem;
+    flex-shrink: 0;
+}
+.ruleset-show-rule-text {
+    font-size: .9rem;
+    color: var(--text);
+    line-height: 1.6;
+}
+
+/* Mod card */
+.ruleset-show-mod {
+    display: flex;
+    align-items: flex-start;
+    gap: .85rem;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: .9rem 1rem;
+}
+.ruleset-show-mod-icon {
+    color: var(--accent2);
+    flex-shrink: 0;
+    margin-top: .1rem;
+}
+.ruleset-show-mod-label {
+    font-size: .82rem;
+    color: var(--muted);
+    margin-bottom: .4rem;
+}
+.ruleset-show-mod-link {
+    font-size: .82rem;
+    color: var(--accent2);
+    text-decoration: none;
+    word-break: break-all;
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+}
+.ruleset-show-mod-link:hover { text-decoration: underline; }
+
+/* Creator card */
+.ruleset-show-creator {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+.ruleset-show-creator-name {
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--text);
+}
+.ruleset-show-creator-date {
+    font-size: .76rem;
+    color: var(--muted);
+    margin-top: .15rem;
+}
+
+/* Actions */
+.ruleset-show-actions {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+}
+.ruleset-show-action-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .45rem;
+}
+.ruleset-show-delete-btn {
+    color: var(--accent2) !important;
+    border-color: rgba(232,25,44,.3) !important;
+}
+.ruleset-show-delete-btn:hover {
+    background: rgba(232,25,44,.1) !important;
+    border-color: var(--accent) !important;
+}
+
+/* Delete modal */
+.ruleset-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.7);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+.ruleset-modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .75rem;
+}
+.ruleset-modal-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(232,25,44,.12);
+    border: 1px solid rgba(232,25,44,.3);
+    color: var(--accent2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.ruleset-modal-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+.ruleset-modal-body {
+    font-size: .87rem;
+    color: var(--muted);
+    line-height: 1.6;
+}
+.ruleset-modal-btns {
+    display: flex;
+    gap: .6rem;
+    margin-top: .5rem;
+}
+.ruleset-modal-confirm-btn {
+    background: var(--accent) !important;
+}

@@ -8,6 +8,7 @@ use App\Http\Controllers\GameController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ReviewVoteController;
 use App\Http\Controllers\RulesetController;
+use App\Http\Controllers\ChallengeController;
 
 Route::get('/', function () {
     return view('home');
@@ -89,3 +90,6 @@ Route::middleware('auth')->group(function () {
     Route::resource('rulesets', RulesetController::class)->except(['index']);
     Route::get('/api/games/search', [RulesetController::class, 'searchGames'])->name('api.games.search');
 });
+
+Route::get('/challenges', [ChallengeController::class, 'index'])->name('challenges.index');
+Route::get('/challenges/game/{rawgId}', [ChallengeController::class, 'game'])->name('challenges.game');

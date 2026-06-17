@@ -6,7 +6,7 @@
         <a href="/games">Games</a>
         <a style="color:var(--muted)">News</a>
         <a href="{{ route('users.index') }}">Users</a>
-        <a href="{{ route('rulesets.create') }}">Rulesets</a>
+        <a href="{{ route('challenges.index') }}">Challenges</a>
     </div>
     <div class="nav-right">
         <button class="hamburger" id="hamburger" aria-label="Toggle menu">
@@ -43,7 +43,7 @@
             <i class="ti ti-binary-tree-2" aria-hidden="true"></i> Skill Tree
         </a>
         <a href="{{ route('games.index') }}" class="dropdown-item">
-            <i class="ti ti-sword" aria-hidden="true"></i> Challenges
+            <i class="ti ti-sword" aria-hidden="true"></i> Site Quests
         </a>
         <a href="{{ route('games.index') }}" class="dropdown-item">
             <i class="ti ti-album" aria-hidden="true"></i> Collections
