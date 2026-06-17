@@ -35,6 +35,34 @@ class ProfileController extends Controller
     }
 
     /**
+     * Tabler icon (without the "ti-" prefix) used as each genre's "logo"
+     * on the profile's Genres tab, keyed by RAWG's genre slug. Any genre
+     * not listed here (e.g. if RAWG adds a new one) falls back to the
+     * generic gamepad icon already used elsewhere in the app.
+     */
+    private const GENRE_ICONS = [
+        'action'                  => 'sword',
+        'adventure'               => 'compass',
+        'role-playing-games-rpg'  => 'wand',
+        'strategy'                => 'chess',
+        'shooter'                 => 'target',
+        'casual'                  => 'mood-smile',
+        'simulation'              => 'settings-automation',
+        'puzzle'                  => 'puzzle',
+        'arcade'                  => 'pacman',
+        'platformer'              => 'stairs',
+        'racing'                  => 'steering-wheel',
+        'massively-multiplayer'   => 'world',
+        'sports'                  => 'ball-basketball',
+        'fighting'                => 'karate',
+        'family'                  => 'friends',
+        'board-games'             => 'meeple',
+        'educational'             => 'school',
+        'indie'                   => 'bulb',
+        'card'                    => 'cards',
+    ];
+
+    /**
      * Build the "reviews per genre" breakdown for the profile's Genres tab.
      * Always returns every genre RAWG knows about (count 0 if the user
      * hasn't reviewed anything in that genre yet), sorted by review count
@@ -65,6 +93,7 @@ class ProfileController extends Controller
                     'id'      => $genre['id'],
                     'name'    => $genre['name'],
                     'slug'    => $genre['slug'],
+                    'icon'    => self::GENRE_ICONS[$genre['slug']] ?? 'device-gamepad-2',
                     'count'   => $count,
                     'percent' => $maxCount > 0 ? (int) round(($count / $maxCount) * 100) : 0,
                 ];

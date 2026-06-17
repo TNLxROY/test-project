@@ -360,21 +360,59 @@
             <h2 class="show-card-title">Reviews by Genre</h2>
 
             @if($reviews->count() === 0)
-                <p style="color:var(--text-muted);margin:0 0 1rem">
+                <p style="color:var(--text-muted);margin:0 0 1.25rem">
                     You haven't written any reviews yet — once you do, your genre breakdown will show up here.
                 </p>
             @endif
 
-            <div class="ratings-row">
+            <style>
+                .genre-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+                    gap: .75rem;
+                }
+                .genre-tile {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    text-align: center;
+                    gap: .4rem;
+                    padding: 1.25rem .75rem;
+                    border-radius: .75rem;
+                    border: 1px solid rgba(127,127,127,.18);
+                    background: rgba(127,127,127,.04);
+                    transition: border-color .15s ease, background-color .15s ease;
+                }
+                .genre-tile-icon {
+                    font-size: 1.8rem;
+                    line-height: 1;
+                    color: var(--text-muted);
+                }
+                .genre-tile-name {
+                    font-weight: 600;
+                    font-size: .9rem;
+                }
+                .genre-tile-count {
+                    font-size: .78rem;
+                    color: var(--text-muted);
+                }
+                .genre-tile--active {
+                    border-color: var(--accent);
+                    background: rgba(127,127,127,.08);
+                }
+                .genre-tile--active .genre-tile-icon {
+                    color: var(--accent);
+                }
+            </style>
+
+            <div class="genre-grid">
                 @foreach($genreStats as $g)
-                <div class="rating-bar-item">
-                    <div class="rating-bar-label">
-                        <span>{{ $g['name'] }}</span>
-                        <span class="rating-bar-count">{{ $g['count'] }}</span>
-                    </div>
-                    <div class="rating-bar-track">
-                        <div class="rating-bar-fill" style="width: {{ $g['percent'] }}%; background: var(--accent)"></div>
-                    </div>
+                <div class="genre-tile {{ $g['count'] > 0 ? 'genre-tile--active' : '' }}">
+                    <i class="ti ti-{{ $g['icon'] }} genre-tile-icon" aria-hidden="true"></i>
+                    <span class="genre-tile-name">{{ $g['name'] }}</span>
+                    <span class="genre-tile-count">
+                        {{ $g['count'] > 0 ? $g['count'] . ' ' . Str::plural('review', $g['count']) : 'Not reviewed yet' }}
+                    </span>
                 </div>
                 @endforeach
             </div>
