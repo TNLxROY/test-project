@@ -4,7 +4,7 @@
 
 @section('content')
 
-    {{-- ── Hero ──────────────────────────────────────────────────────── --}}
+    {{-- ── Hero ───────────────────────────────────────────────────── --}}
     <div class="show-hero" style="background-image: url('{{ $game['background_image'] ?? '' }}')">
         <div class="show-hero-overlay"></div>
         <div class="show-hero-content">
